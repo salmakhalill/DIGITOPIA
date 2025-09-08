@@ -72,6 +72,8 @@ git rebase main
 🔀 Submitting Your Work
 
 1.Go to GitHub.
+
 2.Open a Pull Request from your branch into main.
+
 3.We’ll review each other’s code and then merge.
 
