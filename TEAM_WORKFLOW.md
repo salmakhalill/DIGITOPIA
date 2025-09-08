@@ -20,7 +20,7 @@ This is a simple workflow guide for how we’ll work together on this project.
    ```
 ------------------------------------------------------------
 
-🔄 2. Start Working (First time on each device)
+## 🔄 2. Start Working (First time on each device)
 Clone the repository:
 ```bash
 git clone https://github.com/SalmaKhalil2/DIGITOPIA.git
@@ -28,66 +28,67 @@ cd DIGITOPIA
 ```
 ------------------------------------------------------------
 
-🌱 3. Daily Workflow (Every time you work)
-👉 Create/Switch to your branch
+## 🌱 3. Daily Workflow (Every time you work)
 
-First time only (create new branch):
+***👉 Create/Switch to your branch***
+
+**First time only (create new branch):**
 ```bash
 git checkout -b your_name_or_feature
 ```
 
-1. After that (just switch to it):
+**1. After that (just switch to it):**
 ```bash
 git checkout your_name_or_feature
 ```
 
-👉 Make your changes
+***👉 Make your changes***
 Edit/add files locally.
 
-2. Stage changes:
+**2. Stage changes:**
 ```bash
 git add .
 ```
 
-3. Commit with a clear message:
+**3. Commit with a clear message:**
 ```bash
 git commit -m "Add login page"   # example
 ```
 
-4. Push your branch to GitHub:
+**4. Push your branch to GitHub:**
 ```bash
 git push origin your_name_or_feature
 ```
 -----------------------------------------------------------
 
-🔄 4. Keep Your Branch Updated (Important!)
+## 🔄 4. Keep Your Branch Updated (Important!)
 
-1. Switch to main:
+**1. Switch to main:**
 ```bash
 git checkout main
 ```
 
-2. Pull the latest updates:
+**2. Pull the latest updates:**
 ```bash
 git pull origin main
 ```
 
-3. Switch back to your branch:
+### 3. Switch back to your branch: ###
 ```bash
 git checkout your_name_or_feature
 ```
 
-4. Rebase your branch on top of main:
+**4. Rebase your branch on top of main:**
 ```bash
 git rebase main
 ```
 ------------------------------------------------------------
-🔀 5. Submitting Your Work
+## 🔀 5. Submitting Your Work
 
-1. Go to GitHub.
+**1. Go to GitHub.**
 
-2. Open a Pull Request from your branch → main.
+**2. Open a Pull Request from your branch → main.**
 
-3. The team reviews your code.
+**3. The team reviews your code.**
 
-4. After approval → Merge into main.
+**4. After approval → Merge into main.**
