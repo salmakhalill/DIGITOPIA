@@ -73,7 +73,7 @@ git checkout main
 git pull origin main
 ```
 
-### 3. Switch back to your branch: ###
+**3. Switch back to your branch:**
 ```bash
 git checkout your_name_or_feature
 ```
