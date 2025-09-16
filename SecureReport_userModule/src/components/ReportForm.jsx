@@ -162,7 +162,9 @@ function ReportForm() {
         .then((res) => res.json())
         .then((data) => {
           console.log(data);
-          popup.appendChild(document.createTextNode(`tracking id=${data}`));
+          popup.appendChild(
+            document.createTextNode(`tracking id=${data.tracking_code}`)
+          );
         })
         .catch((err) => console.error(err));
 
