@@ -1,7 +1,69 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef} from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-control-geocoder/dist/Control.Geocoder.css";
+import "leaflet-control-geocoder";
+
 
 function ReportForm() {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null); 
   useEffect(() => {
+    //!--------------------------------------------- Leaflet Map----------------------------------//
+    if (!mapRef.current || mapInstance.current) return;
+
+    const cairo = [30.0444, 31.2357];
+    const map = L.map(mapRef.current).setView(cairo, 10);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
+    }).addTo(map);
+
+    const marker = L.marker(cairo, { draggable: true }).addTo(map);
+    updateLocation(cairo[0], cairo[1]);
+
+
+    function updateLocation(lat, lng) {
+    //Update the visible link
+    document.querySelector("#locationLink").value = `https://www.google.com/maps?q=${lat},${lng}`;
+    //Update hidden inputs
+    document.querySelector("#latitude").value = lat;
+    document.querySelector("#longitude").value = lng;
+  }
+
+    // Update the link when dragging the marker
+    marker.on("dragend", () => {
+      const { lat, lng } = marker.getLatLng();
+      updateLocation(lat, lng);
+    });
+
+    // Search box
+    const geocoder = L.Control.geocoder({
+      placeholder: "ابحث عن المكان...",
+      defaultMarkGeocode: false,
+      position: "bottomleft"  // أو 'topleft'، 'bottomleft', 'bottomright', 'topRight'
+    })
+      .on("markgeocode", (e) => {
+        const latlng = e.geocode.center;
+        marker.setLatLng(latlng);
+        map.setView(latlng, 15);
+        updateLocation(latlng.lat, latlng.lng);
+      })
+      .addTo(map);
+
+    // click to move marker
+    map.on("click", (e) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+      updateLocation(lat, lng);
+    });
+
+    /**
+     * We save a copy of the map in ref so that we can use it later without recreating the map.
+     */
+    mapInstance.current = map;
+  
     const form = document.getElementById("reportForm");
     const popup = document.getElementById("popup");
 
@@ -105,7 +167,8 @@ function ReportForm() {
     form.addEventListener("input", () => {
       const formDataStorage = {
         location: document.querySelector("#location").value,
-        locationLink: document.querySelector("#locationLink").value,
+        latitude: document.querySelector("#latitude").value,
+        longitude: document.querySelector("#longitude").value,    
         date: document.querySelector("#date").value,
         details: document.querySelector("#details").value,
         contact: document.querySelector("#contact").value,
@@ -124,7 +187,8 @@ function ReportForm() {
 
       const reportData = {
         location: document.querySelector("#location").value,
-        location_link: document.querySelector("#locationLink").value,
+        latitude: document.querySelector("#latitude").value,
+        longitude: document.querySelector("#longitude").value,
         incident_date: document.querySelector("#date").value,
         report_details: document.querySelector("#details").value,
         contact_info: document.querySelector("#contact").value,
@@ -221,17 +285,11 @@ function ReportForm() {
                 className="form-control mb-2"
                 placeholder="لينك جوجل مابس"
               />
-              <div className="map-container">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=..."
-                  width="100%"
-                  height="200"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  title="Google Map"
-                ></iframe>
-              </div>
+              
+              <input type="hidden" id="latitude" name="latitude" />
+              <input type="hidden" id="longitude" name="longitude" /> 
+              <div id="map" ref={mapRef} style={{ height: "200px", width: "100%" }}></div>
+
             </div>
 
             <div className="mb-3">
