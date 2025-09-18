@@ -759,6 +759,44 @@ main {
   margin-bottom: 30px;
 }
 
+/* خلي الـ form مجرد حاوية */
+.leaflet-control-geocoder-form {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  display: flex; /* يخلي input والزر جنب بعض */
+  align-items: center;
+}
+
+/* input */
+.leaflet-control-geocoder-form input {
+  flex: 1; /* ياخد كل المساحة */
+  padding: 2px 4px;   /* قللنا البادينج */
+  font-size: 13px;    /* خط أصغر */
+  height: 22px;       /* تحديد ارتفاع ثابت */
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px; /* زوايا شمال */
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* زرار العدسة */
+.leaflet-control-geocoder-form button {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-left: none; /* يندمج مع input */
+  padding: 2px 4px;   /* قللنا البادينج */
+  height: 22px;       /* نفس ارتفاع input */
+  cursor: pointer;
+  border-radius: 0 4px 4px 0; /* زوايا يمين */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+
 .report-form form {
   background: #fff;
   padding: 40px;
