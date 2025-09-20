@@ -1,13 +1,12 @@
-import React, { useEffect, useRef} from "react";
+import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 import "leaflet-control-geocoder";
 
-
 function ReportForm() {
   const mapRef = useRef(null);
-  const mapInstance = useRef(null); 
+  const mapInstance = useRef(null);
   useEffect(() => {
     //!--------------------------------------------- Leaflet Map----------------------------------//
     if (!mapRef.current || mapInstance.current) return;
@@ -17,20 +16,21 @@ function ReportForm() {
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a>',
     }).addTo(map);
 
     const marker = L.marker(cairo, { draggable: true }).addTo(map);
     updateLocation(cairo[0], cairo[1]);
 
-
     function updateLocation(lat, lng) {
-    //Update the visible link
-    document.querySelector("#locationLink").value = `https://www.google.com/maps?q=${lat},${lng}`;
-    //Update hidden inputs
-    document.querySelector("#latitude").value = lat;
-    document.querySelector("#longitude").value = lng;
-  }
+      //Update the visible link
+      document.querySelector(
+        "#locationLink"
+      ).value = `https://www.google.com/maps?q=${lat},${lng}`;
+      //Update hidden inputs
+      document.querySelector("#latitude").value = lat;
+      document.querySelector("#longitude").value = lng;
+    }
     // Update the link when dragging the marker
     marker.on("dragend", () => {
       const { lat, lng } = marker.getLatLng();
@@ -41,7 +41,7 @@ function ReportForm() {
     const geocoder = L.Control.geocoder({
       placeholder: "ابحث عن المكان...",
       defaultMarkGeocode: false,
-      position: "bottomleft"  // أو 'topleft'، 'bottomleft', 'bottomright', 'topRight'
+      position: "bottomleft", // أو 'topleft'، 'bottomleft', 'bottomright', 'topRight'
     })
       .on("markgeocode", (e) => {
         const latlng = e.geocode.center;
@@ -82,18 +82,18 @@ function ReportForm() {
 
     // استرجاع البيانات من localStorage
     if (window.localStorage.getItem("formData")) {
-    const saved = JSON.parse(window.localStorage.getItem("formData"));
-    document.querySelector("#type").value = saved.reportType || "اعتداء";
-    document.querySelector("#location").value = saved.location;
-    document.querySelector("#latitude").value = saved.latitude;
-    document.querySelector("#longitude").value = saved.longitude;
-    document.querySelector("#date").value = saved.date;
-    document.querySelector("#details").value = saved.details;
-    document.querySelector("#contact").value = saved.contact;
-    document.querySelector("#criminalName").value = saved.criminalName;
-    document.querySelector("#criminalDesc").value = saved.criminalDesc;
-    document.querySelector("#criminalOther").value = saved.criminalOther;
-  }
+      const saved = JSON.parse(window.localStorage.getItem("formData"));
+      document.querySelector("#type").value = saved.reportType || "اعتداء";
+      document.querySelector("#location").value = saved.location;
+      document.querySelector("#latitude").value = saved.latitude;
+      document.querySelector("#longitude").value = saved.longitude;
+      document.querySelector("#date").value = saved.date;
+      document.querySelector("#details").value = saved.details;
+      document.querySelector("#contact").value = saved.contact;
+      document.querySelector("#criminalName").value = saved.criminalName;
+      document.querySelector("#criminalDesc").value = saved.criminalDesc;
+      document.querySelector("#criminalOther").value = saved.criminalOther;
+    }
 
     // التسجيل الصوتي
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -167,17 +167,17 @@ function ReportForm() {
     // حفظ البيانات في localStorage
     form.addEventListener("input", () => {
       const formDataStorage = {
-      location: document.querySelector("#location").value,
-      latitude: document.querySelector("#latitude").value,
-      longitude: document.querySelector("#longitude").value,    
-      date: document.querySelector("#date").value,
-      details: document.querySelector("#details").value,
-      contact: document.querySelector("#contact").value,
-      reportType: document.querySelector("#type").value,
-      criminalName: document.querySelector("#criminalName").value,
-      criminalDesc: document.querySelector("#criminalDesc").value,
-      criminalOther: document.querySelector("#criminalOther").value,
-    };
+        location: document.querySelector("#location").value,
+        latitude: document.querySelector("#latitude").value,
+        longitude: document.querySelector("#longitude").value,
+        date: document.querySelector("#date").value,
+        details: document.querySelector("#details").value,
+        contact: document.querySelector("#contact").value,
+        reportType: document.querySelector("#type").value,
+        criminalName: document.querySelector("#criminalName").value,
+        criminalDesc: document.querySelector("#criminalDesc").value,
+        criminalOther: document.querySelector("#criminalOther").value,
+      };
 
       window.localStorage.setItem("formData", JSON.stringify(formDataStorage));
     });
@@ -213,20 +213,26 @@ function ReportForm() {
           description: document.querySelector("#criminalDesc").value.trim(),
           other_info: document.querySelector("#criminalOther").value.trim(),
         },
-      ].filter(c => Object.values(c).some(v => v !== ""));
-      if (criminalInfos.length > 0) formData.append("criminal_infos", JSON.stringify(criminalInfos));
+      ].filter((c) => Object.values(c).some((v) => v !== ""));
+      if (criminalInfos.length > 0)
+        formData.append("criminal_infos", JSON.stringify(criminalInfos));
 
       // Attachments: add all files if any
-      allFiles.forEach(file => formData.append("attachments", file));
+      allFiles.forEach((file) => formData.append("attachments", file));
 
       // Audio recording: add only if a recording exists
       if (audioData.value) {
         const base64 = audioData.value.split(",")[1];
         const byteCharacters = atob(base64);
         const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+        for (let i = 0; i < byteCharacters.length; i++)
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
         const byteArray = new Uint8Array(byteNumbers);
-        formData.append("attachments", new Blob([byteArray], { type: "audio/webm" }), "audio_recording.webm");
+        formData.append(
+          "attachments",
+          new Blob([byteArray], { type: "audio/webm" }),
+          "audio_recording.webm"
+        );
       }
 
       fetch("http://127.0.0.1:8000/api/reports/new/", {
@@ -236,9 +242,12 @@ function ReportForm() {
         .then((res) => res.json())
         .then((data) => {
           console.log(data);
-          popup.appendChild(
-            document.createTextNode(`tracking id=${data.tracking_code}`)
-          );
+          popup.querySelector(
+            ".trackingID"
+          ).innerHTML = `كود متابعة بلاغك هو:<br>
+   <span style="color:#4ec1f1; font-size:28px; font-weight:bold;">
+     ${data.tracking_code}
+   </span>`;
         })
         .catch((err) => console.error(err));
 
@@ -266,7 +275,7 @@ function ReportForm() {
       });
   }, []);
 
-  return (  
+  return (
     <>
       <div className="report-form container py-3">
         <div className="container">
@@ -275,16 +284,18 @@ function ReportForm() {
 
           <form id="reportForm">
             <div className="mb-3">
-            <label htmlFor="type" className="form-label">نوع البلاغ</label>
-            <select id="type" className="form-control" required>
-              <option value="">اختر نوع البلاغ</option>
-              <option>اعتداء</option>
-              <option>ابتزاز</option>
-              <option>تحرش</option>
-              <option>سرقة</option>
-              <option>مشادة</option>
-            </select>
-          </div>
+              <label htmlFor="type" className="form-label">
+                نوع البلاغ
+              </label>
+              <select id="type" className="form-control" required>
+                <option value="">اختر نوع البلاغ</option>
+                <option>اعتداء</option>
+                <option>ابتزاز</option>
+                <option>تحرش</option>
+                <option>سرقة</option>
+                <option>مشادة</option>
+              </select>
+            </div>
             <div className="mb-3">
               <label htmlFor="location" className="form-label">
                 العنوان/المكان
@@ -306,11 +317,14 @@ function ReportForm() {
                 className="form-control mb-2"
                 placeholder="لينك جوجل مابس"
               />
-              
-              <input type="hidden" id="latitude" name="latitude" />
-              <input type="hidden" id="longitude" name="longitude" /> 
-              <div id="map" ref={mapRef} style={{ height: "200px", width: "100%" }}></div>
 
+              <input type="hidden" id="latitude" name="latitude" />
+              <input type="hidden" id="longitude" name="longitude" />
+              <div
+                id="map"
+                ref={mapRef}
+                style={{ height: "200px", width: "100%" }}
+              ></div>
             </div>
 
             <div className="mb-3">
@@ -449,6 +463,17 @@ function ReportForm() {
         <div className="popup-content">
           <h2>✅ تم إرسال البلاغ</h2>
           <p>شكرًا لتعاونك، سيتم التعامل مع البلاغ بسرية.</p>
+          <h3
+            className="trackingID"
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#081931",
+              textAlign: "center",
+              marginTop: "20px",
+            }}
+          ></h3>
+
           <button onClick={() => window.closePopup()} className="btn-primary">
             تم
           </button>
