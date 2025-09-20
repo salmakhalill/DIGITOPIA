@@ -23,13 +23,14 @@ function ReportForm() {
     updateLocation(cairo[0], cairo[1]);
 
     function updateLocation(lat, lng) {
-    //Update the visible link
-    document.querySelector("#locationLink").value = `https://www.google.com/maps?q=${lat},${lng}`;
-    //Update hidden inputs
-    document.querySelector("#latitude").value = lat;
-    document.querySelector("#longitude").value = lng;
-  }
-
+      //Update the visible link
+      document.querySelector(
+        "#locationLink"
+      ).value = `https://www.google.com/maps?q=${lat},${lng}`;
+      //Update hidden inputs
+      document.querySelector("#latitude").value = lat;
+      document.querySelector("#longitude").value = lng;
+    }
     // Update the link when dragging the marker
     marker.on("dragend", () => {
       const { lat, lng } = marker.getLatLng();
@@ -82,8 +83,10 @@ function ReportForm() {
     // استرجاع البيانات من localStorage
     if (window.localStorage.getItem("formData")) {
       const saved = JSON.parse(window.localStorage.getItem("formData"));
+      document.querySelector("#type").value = saved.reportType || "اعتداء";
       document.querySelector("#location").value = saved.location;
-      document.querySelector("#locationLink").value = saved.locationLink;
+      document.querySelector("#latitude").value = saved.latitude;
+      document.querySelector("#longitude").value = saved.longitude;
       document.querySelector("#date").value = saved.date;
       document.querySelector("#details").value = saved.details;
       document.querySelector("#contact").value = saved.contact;
@@ -166,14 +169,16 @@ function ReportForm() {
       const formDataStorage = {
         location: document.querySelector("#location").value,
         latitude: document.querySelector("#latitude").value,
-        longitude: document.querySelector("#longitude").value,    
+        longitude: document.querySelector("#longitude").value,
         date: document.querySelector("#date").value,
         details: document.querySelector("#details").value,
         contact: document.querySelector("#contact").value,
+        reportType: document.querySelector("#type").value,
         criminalName: document.querySelector("#criminalName").value,
         criminalDesc: document.querySelector("#criminalDesc").value,
         criminalOther: document.querySelector("#criminalOther").value,
       };
+
       window.localStorage.setItem("formData", JSON.stringify(formDataStorage));
     });
 
@@ -183,38 +188,51 @@ function ReportForm() {
 
       const formData = new FormData();
 
-      const reportData = {
-        location: document.querySelector("#location").value,
-        latitude: document.querySelector("#latitude").value,
-        longitude: document.querySelector("#longitude").value,
-        incident_date: document.querySelector("#date").value,
-        report_details: document.querySelector("#details").value,
-        contact_info: document.querySelector("#contact").value,
-        criminal_infos: [
-          {
-            name: document.querySelector("#criminalName").value,
-            description: document.querySelector("#criminalDesc").value,
-            other_info: document.querySelector("#criminalOther").value,
-          },
-        ],
-      };
+      // Basic data: read values from the form and trim whitespace
+      const location = document.querySelector("#location").value.trim();
+      const lat = parseFloat(document.querySelector("#latitude").value);
+      const lon = parseFloat(document.querySelector("#longitude").value);
+      const incident_date = document.querySelector("#date").value.trim();
+      const report_details = document.querySelector("#details").value.trim();
+      const contact_info = document.querySelector("#contact").value.trim();
+      const report_type = document.querySelector("#type").value || "اعتداء";
 
-      formData.append("reportData", JSON.stringify(reportData));
+      // Add data to FormData only if it exists and is valid
+      if (location) formData.append("location", location);
+      if (Number.isFinite(lat)) formData.append("latitude", lat);
+      if (Number.isFinite(lon)) formData.append("longitude", lon);
+      if (incident_date) formData.append("incident_date", incident_date);
+      if (report_details) formData.append("report_details", report_details);
+      if (contact_info) formData.append("contact_info", contact_info);
+      formData.append("report_type", report_type);
 
-      allFiles.forEach((file) => {
-        formData.append("attachments[]", file, "file");
-      });
+      // Criminal info: add only if there is at least one non-empty value
+      const criminalInfos = [
+        {
+          name: document.querySelector("#criminalName").value.trim(),
+          description: document.querySelector("#criminalDesc").value.trim(),
+          other_info: document.querySelector("#criminalOther").value.trim(),
+        },
+      ].filter((c) => Object.values(c).some((v) => v !== ""));
+      if (criminalInfos.length > 0)
+        formData.append("criminal_infos", JSON.stringify(criminalInfos));
 
+      // Attachments: add all files if any
+      allFiles.forEach((file) => formData.append("attachments", file));
+
+      // Audio recording: add only if a recording exists
       if (audioData.value) {
         const base64 = audioData.value.split(",")[1];
         const byteCharacters = atob(base64);
         const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
+        for (let i = 0; i < byteCharacters.length; i++)
           byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
         const byteArray = new Uint8Array(byteNumbers);
-        const audioBlob = new Blob([byteArray], { type: "audio/webm" });
-        formData.append("attachments[]", audioBlob, "audio_recording");
+        formData.append(
+          "attachments",
+          new Blob([byteArray], { type: "audio/webm" }),
+          "audio_recording.webm"
+        );
       }
 
       fetch("http://127.0.0.1:8000/api/reports/new/", {
@@ -257,7 +275,7 @@ function ReportForm() {
       });
   }, []);
 
-  return (  
+  return (
     <>
       <div className="report-form container py-3">
         <div className="container">
@@ -265,6 +283,19 @@ function ReportForm() {
           <p className="report-subtitle">نضمن سرية بياناتك بالكامل</p>
 
           <form id="reportForm">
+            <div className="mb-3">
+              <label htmlFor="type" className="form-label">
+                نوع البلاغ
+              </label>
+              <select id="type" className="form-control" required>
+                <option value="">اختر نوع البلاغ</option>
+                <option>اعتداء</option>
+                <option>ابتزاز</option>
+                <option>تحرش</option>
+                <option>سرقة</option>
+                <option>مشادة</option>
+              </select>
+            </div>
             <div className="mb-3">
               <label htmlFor="location" className="form-label">
                 العنوان/المكان

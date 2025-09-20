@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 
-# جدول البلاغ الرئيسي
+# Main Report table
 class Report(models.Model):
 
     location = models.CharField(max_length=255)
@@ -33,33 +33,36 @@ class Report(models.Model):
     ],
     default='received'
     )
+
+    # Auto-generated tracking code for each report
     tracking_code = models.CharField(max_length=12, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        """Generate tracking code if not exists before saving."""
         if not self.tracking_code:
             self.tracking_code = uuid.uuid4().hex[:12].upper()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.tracking_code} - {self.case_status}"
+    
 
-
-# جدول معلومات المجرمين المرتبط بالبلاغ
+# Table for criminal information related to a report
 class CriminalInfo(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="criminal_infos")
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)  # أوصاف المجرم
-    other_info = models.TextField(blank=True, null=True)   # معلومات إضافية
+    description = models.TextField(blank=True, null=True)  
+    other_info = models.TextField(blank=True, null=True)  
 
     def __str__(self):
         return self.name
+    
 
-
-# جدول المرفقات المرتبط بالبلاغ
+# Table for attachments related to a report
 class Attachment(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="attachments")
-    audio_recording = models.FileField(upload_to="attachments/audio/", blank=True, null=True)  # الملفات الصوتية في مجلد منفصل
-    file = models.FileField(upload_to="attachments/files/", blank=True, null=True)  # باقي الملفات في مجلد منفصل
+    audio_recording = models.FileField(upload_to="attachments/audio/", blank=True, null=True)  # => Audio files folder
+    file = models.FileField(upload_to="attachments/files/", blank=True, null=True)  # => Other files folder
     def __str__(self):
         return f"Attachment for {self.report.tracking_code}"

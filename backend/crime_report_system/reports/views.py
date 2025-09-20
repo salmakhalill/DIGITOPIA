@@ -3,9 +3,14 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Report, CriminalInfo, Attachment
-from .serializers import ReportNestedSerializer,  ReportTrackingSerializer
+from .serializers import ReportNestedSerializer, ReportTrackingSerializer
+
 
 class ReportCreateNestedView(generics.CreateAPIView):
+    """
+    Create a new Report along with optional CriminalInfo and Attachments.
+    Handles JSON parsing for criminals and differentiates audio/file attachments.
+    """
     queryset = Report.objects.all()
     serializer_class = ReportNestedSerializer
     parser_classes = (MultiPartParser, FormParser)
@@ -13,7 +18,7 @@ class ReportCreateNestedView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
 
-        # تحويل criminal_infos من JSON string إلى قائمة
+        # Parse 'criminal_infos' from JSON string, default to empty list if invalid
         criminal_infos = []
         if "criminal_infos" in data:
             try:
@@ -21,10 +26,10 @@ class ReportCreateNestedView(generics.CreateAPIView):
             except Exception:
                 criminal_infos = []
 
-        # إزالة criminal_infos من البيانات للـ serializer
+        # Remove 'criminal_infos' from main data before saving the Report
         data.pop("criminal_infos", None)
 
-        # تحويل latitude و longitude لأي float
+        # Convert latitude and longitude to float, fallback to None if invalid
         for field in ["latitude", "longitude"]:
             value = data.get(field)
             if isinstance(value, list):
@@ -34,18 +39,18 @@ class ReportCreateNestedView(generics.CreateAPIView):
             except (TypeError, ValueError):
                 data[field] = None
 
-        # حفظ البلاغ الرئيسي
+        # Save main Report
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         report = serializer.save()
 
-        # حفظ المجرمين دفعة واحدة
+        # Save CriminalInfo objects in bulk if any
         criminal_objs = [
             CriminalInfo(report=report, **criminal) for criminal in criminal_infos
         ]
         CriminalInfo.objects.bulk_create(criminal_objs)
 
-        # حفظ المرفقات
+        # Save attachments, separating audio and other files
         files = request.FILES.getlist("attachments")
         attachments_to_create = []
         for f in files:
@@ -56,35 +61,44 @@ class ReportCreateNestedView(generics.CreateAPIView):
                 attachments_to_create.append(Attachment(report=report, file=f))
         Attachment.objects.bulk_create(attachments_to_create)
 
-        # إعادة البلاغ كامل مع المجرمين والمرفقات
+        # Return full Report data including nested criminals and attachments
         report_data = ReportNestedSerializer(report, context={"request": request}).data
         return Response(report_data, status=status.HTTP_201_CREATED)
 
-# عرض كل البلاغات (يمكن إضافة nested إذا حابة تعرض المجرمين والمرفقات)
+
 class ReportListView(generics.ListAPIView):
+    """List all reports, optionally including nested CriminalInfo and Attachments."""
     queryset = Report.objects.all()
     serializer_class = ReportNestedSerializer
 
-# عرض بلاغ واحد بالتفصيل
+
 class ReportDetailView(generics.RetrieveAPIView):
+    """Retrieve a single report by ID with full details."""
     queryset = Report.objects.all()
     serializer_class = ReportNestedSerializer
     lookup_field = "id"
 
-# تعديل بلاغ (يمكن تعديل بيانات البلاغ فقط أو إضافة دعم للمجرمين والمرفقات لاحقًا)
+
 class ReportUpdateView(generics.UpdateAPIView):
+    """
+    Update Report fields.
+    Currently only updates main Report data; nested CriminalInfo and Attachments
+    can be supported later if needed.
+    """
     queryset = Report.objects.all()
     serializer_class = ReportNestedSerializer
     lookup_field = "id"
 
-# حذف بلاغ
+
 class ReportDeleteView(generics.DestroyAPIView):
+    """Delete a report by its ID."""
     queryset = Report.objects.all()
     serializer_class = ReportNestedSerializer
     lookup_field = "id"
 
-# تتبع بلاغ باستخدام tracking_code
+
 class ReportTrackView(generics.RetrieveAPIView):
+    """Retrieve a report using its tracking_code."""
     queryset = Report.objects.all()
     serializer_class = ReportTrackingSerializer
     lookup_field = "tracking_code"

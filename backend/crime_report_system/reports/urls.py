@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    ReportCreateNestedView,  # الفورم الموحد
+    ReportCreateNestedView,  #? => Unified form: create report + criminals + attachments
     ReportListView,
     ReportDetailView,
     ReportUpdateView,
@@ -9,21 +9,21 @@ from .views import (
 )
 
 urlpatterns = [
-    # إنشاء بلاغ جديد + بيانات المجرمين + المرفقات دفعة واحدة
+    # Create a new report along with criminal info and attachments
     path('reports/new/', ReportCreateNestedView.as_view(), name='report-create-nested'),
 
-    # عرض كل البلاغات
+    # List all reports
     path('reports/', ReportListView.as_view(), name='report-list'),
 
-    # عرض بلاغ واحد بالتفصيل
+    # Retrieve a single report in detail
     path('reports/<int:id>/', ReportDetailView.as_view(), name='report-detail'),
 
-    # تعديل بلاغ
+    # Update a report
     path('reports/<int:id>/update/', ReportUpdateView.as_view(), name='report-update'),
 
-    # حذف بلاغ
+    # Delete a report
     path('reports/<int:id>/delete/', ReportDeleteView.as_view(), name='report-delete'),
 
-    # تتبع بلاغ باستخدام tracking_code
+    # Track a report using tracking_code
     path('reports/track/<str:tracking_code>/', ReportTrackView.as_view(), name='report-track'),
 ]
