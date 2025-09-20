@@ -245,7 +245,7 @@ function ReportForm() {
           popup.querySelector(
             ".trackingID"
           ).innerHTML = `كود متابعة بلاغك هو:<br>
-   <span style="color:#4ec1f1; font-size:28px; font-weight:bold;">
+   <span style="color:#4ec1f1; font-size:24px; font-weight:bold;">
      ${data.tracking_code}
    </span>`;
         })
