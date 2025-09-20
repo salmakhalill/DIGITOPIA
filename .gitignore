@@ -1,0 +1,11 @@
+# Python cache & DB
+__pycache__/
+*.pyc
+*.sqlite3
+*.db
+
+# Virtual environment
+my_env/
+
+# Media
+backend/crime_report_system/media/
