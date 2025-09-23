@@ -19,7 +19,8 @@
         { "file": "dashboard/imgs/image.jpg" },
         { "audio_recording": "recording1.webm" }
       ],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "عالية"
     },
     "report_2": {
       "id": 2,
@@ -37,7 +38,8 @@
         }
       ],
       "attachments": [{ "file": "image2.jpg" }],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "متوسطة"
     },
     "report_3": {
       "id": 3,
@@ -49,7 +51,8 @@
       "contact_info": "01011223344",
       "criminal_infos": [],
       "attachments": [],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "متوسطة"
     },
     "report_4": {
       "id": 4,
@@ -67,7 +70,8 @@
         }
       ],
       "attachments": [],
-      "status": "تم الإغلاق"
+      "status": "تم الإغلاق",
+      "severity": "منخفضة"
     },
     "report_5": {
       "id": 5,
@@ -88,7 +92,8 @@
         { "file": "image5.jpg" },
         { "audio_recording": "recording5.webm" }
       ],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "عالية"
     },
     "report_6": {
       "id": 6,
@@ -100,7 +105,8 @@
       "contact_info": "01012349876",
       "criminal_infos": [],
       "attachments": [],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "متوسطة"
     },
     "report_7": {
       "id": 7,
@@ -114,7 +120,8 @@
         { "name": "ليلى", "description": "مشارك", "other_info": "" }
       ],
       "attachments": [{ "file": "image7.jpg" }],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "متوسطة"
     },
     "report_8": {
       "id": 8,
@@ -126,7 +133,8 @@
       "contact_info": "01011224455",
       "criminal_infos": [],
       "attachments": [],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "منخفضة"
     },
     "report_9": {
       "id": 9,
@@ -140,7 +148,8 @@
         { "name": "يوسف", "description": "طرف في الخلاف", "other_info": "" }
       ],
       "attachments": [{ "file": "image9.jpg" }],
-      "status": "تم الإغلاق"
+      "status": "تم الإغلاق",
+      "severity": "منخفضة"
     },
     "report_10": {
       "id": 10,
@@ -152,7 +161,8 @@
       "contact_info": "01099881122",
       "criminal_infos": [],
       "attachments": [{ "audio_recording": "recording10.webm" }],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "عالية"
     },
     "report_11": {
       "id": 11,
@@ -164,7 +174,8 @@
       "contact_info": "01011112233",
       "criminal_infos": [],
       "attachments": [],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "متوسطة"
     },
     "report_12": {
       "id": 12,
@@ -178,7 +189,8 @@
         { "name": "سارة", "description": "طرف", "other_info": "" }
       ],
       "attachments": [{ "file": "image12.jpg" }],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "متوسطة"
     },
     "report_13": {
       "id": 13,
@@ -190,7 +202,8 @@
       "contact_info": "01033334455",
       "criminal_infos": [],
       "attachments": [],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "منخفضة"
     },
     "report_14": {
       "id": 14,
@@ -204,7 +217,8 @@
         { "name": "ليلى", "description": "طرف", "other_info": "" }
       ],
       "attachments": [{ "file": "image14.jpg" }],
-      "status": "تم الإغلاق"
+      "status": "تم الإغلاق",
+      "severity": "منخفضة"
     },
     "report_15": {
       "id": 15,
@@ -216,7 +230,8 @@
       "contact_info": "01055556677",
       "criminal_infos": [],
       "attachments": [{ "audio_recording": "recording15.webm" }],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "عالية"
     },
     "report_16": {
       "id": 16,
@@ -228,7 +243,8 @@
       "contact_info": "01066667788",
       "criminal_infos": [],
       "attachments": [],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "متوسطة"
     },
     "report_17": {
       "id": 17,
@@ -240,7 +256,8 @@
       "contact_info": "01077778899",
       "criminal_infos": [],
       "attachments": [],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "متوسطة"
     },
     "report_18": {
       "id": 18,
@@ -254,7 +271,8 @@
         { "name": "خالد", "description": "طرف", "other_info": "" }
       ],
       "attachments": [{ "file": "image18.jpg" }],
-      "status": "قيد المراجعة"
+      "status": "قيد المراجعة",
+      "severity": "منخفضة"
     },
     "report_19": {
       "id": 19,
@@ -266,7 +284,8 @@
       "contact_info": "01099990011",
       "criminal_infos": [],
       "attachments": [],
-      "status": "تم الإغلاق"
+      "status": "تم الإغلاق",
+      "severity": "منخفضة"
     },
     "report_20": {
       "id": 20,
@@ -280,7 +299,8 @@
         { "name": "أحمد", "description": "مشبوه", "other_info": "" }
       ],
       "attachments": [{ "audio_recording": "recording20.webm" }],
-      "status": "تم استلام البلاغ"
+      "status": "تم استلام البلاغ",
+      "severity": "عالية"
     }
   }
 }
