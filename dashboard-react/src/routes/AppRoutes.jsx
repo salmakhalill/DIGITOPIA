@@ -4,7 +4,7 @@ import MainLayout from "../layout/MainLayout";
 import Home from "../pages/Home";
 import Users from "../pages/Users";
 import ReceivedReport from "../pages/ReceivedReport";
-// import Statistics from "../pages/Statistics";
+import Statistics from "../pages/Statistics";
 import Setting from "../pages/Setting";
 import Archive from "../pages/Archive";
 import Privacy from "../pages/Privacy";
@@ -16,6 +16,7 @@ const AppRoutes = () => (
         <Route index element={<Home />} /> {/* الصفحة الرئيسية */}
         <Route path="users" element={<Users />} />
         <Route path="received-report" element={<ReceivedReport />} />
+        <Route path="statistics" element={<Statistics />} />
         <Route path="setting" element={<Setting />} />
         <Route path="archive" element={<Archive />} />
         <Route path="privacy" element={<Privacy />} />

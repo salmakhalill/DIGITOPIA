@@ -242,10 +242,10 @@ const Users = () => {
     <div className="wrapperr mt-5 mb-5">
       {/* Users Head */}
       <div className="users-head d-flex align-items-center justify-content-between mb-3">
-        <h3 className="fw-bold">إدارة المستخدمين</h3>
+        <h2 className="fw-bold">إدارة المستخدمين</h2>
         <button
           type="button"
-          className="btn btn-primary"
+          className=" btn-primary"
           data-bs-toggle="modal"
           data-bs-target="#addUserModal"
         >
@@ -257,7 +257,7 @@ const Users = () => {
       <div className="users-table mt-3">
         <div className="table-filter d-flex align-items-center justify-content-between pb-3">
           <select
-            className="form-select"
+           
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -265,14 +265,16 @@ const Users = () => {
             <option value="النشطاء">النشطاء</option>
             <option value="المحظورون">المحظورون</option>
           </select>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="الاسم"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ maxWidth: "250px" }}
-          />
+          <div className="search">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="الاسم"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ maxWidth: "250px" }}
+            />
+          </div>
         </div>
 
         {/* Users Table */}
@@ -511,7 +513,7 @@ const Users = () => {
             <div className="modal-footer">
               <button
                 type="button"
-                className=" btn-secondary"
+                className="btn btn-secondary"
                 data-bs-dismiss="modal"
               >
                 إغلاق

@@ -9,11 +9,18 @@ const statusMap = {
   "تم الإغلاق": "closed",
 };
 
+const severityColors = {
+  عالية: "text-danger fw-bold",
+  متوسطة: "text-warning fw-bold", 
+  منخفضة: "text-success fw-bold", 
+};
+
 const ReceivedReports = () => {
   const [reports, setReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState("الكل");
+  const [selectedSeverity, setSelectedSeverity] = useState("الكل");
   const [search, setSearch] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
@@ -30,6 +37,7 @@ const ReceivedReports = () => {
   // ===== Filters & Search =====
   useEffect(() => {
     let filtered = [...reports];
+
     if (selectedStatus !== "الكل") {
       if (selectedStatus === "المستلمة")
         filtered = filtered.filter((r) => statusMap[r.status] === "new");
@@ -42,14 +50,20 @@ const ReceivedReports = () => {
       else if (selectedStatus === "المغلقة")
         filtered = filtered.filter((r) => statusMap[r.status] === "closed");
     }
+
+    if (selectedSeverity !== "الكل") {
+      filtered = filtered.filter((r) => r.severity === selectedSeverity);
+    }
+
     if (search.trim() !== "") {
       filtered = filtered.filter((r) =>
         r.id.toString().toLowerCase().includes(search.toLowerCase())
       );
     }
+
     setFilteredReports(filtered);
     setCurrentPage(1);
-  }, [selectedStatus, search, reports]);
+  }, [selectedStatus, selectedSeverity, search, reports]);
 
   const pageCount = Math.ceil(filteredReports.length / rowPerPage);
   const startIndex = (currentPage - 1) * rowPerPage;
@@ -81,35 +95,52 @@ const ReceivedReports = () => {
   return (
     <div className="wrapperr mt-5 mb-5">
       <div className="users-head d-flex align-items-center justify-content-between">
-        <h3 className="fw-bold">البلاغات المستلمة</h3>
+        <h2 className="fw-bold">البلاغات المستلمة</h2>
       </div>
 
       <div className="users-table">
         <div className="table-filter d-flex align-items-center justify-content-between pb-3">
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            <option value="الكل">الكل</option>
-            <option value="المستلمة">المستلمة</option>
-            <option value="قيد المراجعة">قيد المراجعة</option>
-            <option value="قيد المعالجة">قيد المعالجة</option>
-            <option value="المحلولة">المحلولة</option>
-            <option value="المغلقة">المغلقة</option>
-          </select>
-          <input
-            type="text"
-            placeholder="id البلاغ"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ paddingRight: "35px" }}
-          />
+          {/* الفلاتر */}
+          <div className="d-flex gap-2">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="الكل">كل الحالات</option>
+              <option value="المستلمة">المستلمة</option>
+              <option value="قيد المراجعة">قيد المراجعة</option>
+              <option value="قيد المعالجة">قيد المعالجة</option>
+              <option value="المحلولة">المحلولة</option>
+              <option value="المغلقة">المغلقة</option>
+            </select>
+
+            <select
+              value={selectedSeverity}
+              onChange={(e) => setSelectedSeverity(e.target.value)}
+            >
+              <option value="الكل">حالة البلاغ</option>
+              <option value="عالية">حرجة</option>
+              <option value="متوسطة">متوسطة</option>
+              <option value="منخفضة">منخفضة</option>
+            </select>
+          </div>
+
+          <div className="search">
+            <input
+              type="text"
+              placeholder="id البلاغ"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ paddingRight: "35px" }}
+            />
+          </div>
         </div>
 
         <table className="table">
           <thead>
             <tr>
               <th>id</th>
+              <th>شدة البلاغ</th>
               <th>نوع البلاغ</th>
               <th>العنوان</th>
               <th>الدور</th>
@@ -124,6 +155,15 @@ const ReceivedReports = () => {
               return (
                 <tr key={report.id}>
                   <td>{report.id}</td>
+                  <td>
+                    <span
+                      className={
+                        severityColors[report.severity] || "text-muted"
+                      }
+                    >
+                      {report.severity || "غير محدد"}
+                    </span>
+                  </td>
                   <td>{report.report_type}</td>
                   <td>{report.location}</td>
                   <td>{report.contact_info}</td>
@@ -168,6 +208,7 @@ const ReceivedReports = () => {
                       </ul>
                     </div>
                   </td>
+
                   <td>
                     {/* Modal Trigger */}
                     <button
@@ -221,6 +262,17 @@ const ReceivedReports = () => {
                             </p>
                             <p>
                               <strong>حالة البلاغ:</strong> {report.status}
+                            </p>
+                            <p>
+                              <strong>شدة البلاغ:</strong>{" "}
+                              <span
+                                className={
+                                  severityColors[report.severity] ||
+                                  "text-muted"
+                                }
+                              >
+                                {report.severity || "غير محدد"}
+                              </span>
                             </p>
                             <hr />
                             <p>
