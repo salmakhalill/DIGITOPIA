@@ -387,7 +387,7 @@ header ul li a {
   padding-top: 80px;
   padding-bottom: 80px;
   position: relative;
-  background-image: url(src/assets/stats.jpg);
+  background-image: url("/stats.jpg") !important;
   min-height: 100vh;
   background-size: cover;
 }
@@ -1037,17 +1037,19 @@ main {
 .timeline li:not(:first-child)::before {
   content: "";
   position: absolute;
-  top: -59px;
-  inset-inline-start: 18px;
-  transform: translateX(-50%);
+  top: -47px;
+  inset-inline-start: 16px;
+  transform: translate(-50%);
   width: 3px;
-  height: calc(100% - 7px);
+  height: calc(100% - 8px);
   border-inline-start: 3px dotted var(--secondry-color);
   z-index: 1;
 }
 .timeline li.active::before {
-  border-inline-start: 3px solid var(--secondry-color) !important;
+  border: none;
+  border-left: 3px solid var(--secondry-color) !important;
 }
+
 .timeline li .icon {
   width: 40px;
   height: 40px;
@@ -1138,11 +1140,11 @@ main {
   .timeline li:not(:first-child)::before {
     content: "";
     position: absolute;
-    top: -55px;
+    top: -45px;
     inset-inline-start: -8px;
-    transform: translateX(-50%);
+    transform: translate(-50%);
     width: 3px;
-    height: calc(100% - 0px);
+    height: calc(100% + -0px);
     border-inline-start: 3px dotted var(--secondry-color);
     z-index: 1;
   }

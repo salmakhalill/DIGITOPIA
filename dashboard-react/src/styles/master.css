@@ -77,6 +77,17 @@ html {
   height: 100% !important;
 }
 /* start sidebar */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
 
 .dashboard .sidebar {
   background-color: var(--main-color);
@@ -178,7 +189,8 @@ html {
   list-style: none;
 }
 
-.dashboard .sidebar ul li a {
+.dashboard .sidebar ul li a,
+.dashboard .sidebar ul li button {
   display: flex;
   align-items: start;
   padding: 10px 15px;
@@ -188,7 +200,7 @@ html {
   color: var(--font-color);
   text-decoration: none;
   box-sizing: border-box;
-  width: 190px;
+  width: 190px !important;
   transition: 0.1s;
 }
 .dashboard .sidebar ul li a::after {
@@ -196,9 +208,10 @@ html {
 }
 
 .dashboard .sidebar ul li a.active,
-.dashboard .sidebar ul li a:hover {
-  background-color: var(--secondry-color);
-  border-left: 5px solid var(--dark-purple);
+.dashboard .sidebar ul li a:hover,
+.dashboard .sidebar ul li button:hover {
+  background-color: var(--secondry-color) !important;
+  border-left: 5px solid var(--dark-purple) !important;
 }
 
 .dashboard .sidebar ul li a i {
@@ -451,6 +464,8 @@ header .container {
   color: #fff;
   font-weight: bold;
   text-decoration: none;
+  padding: 10px 20px;
+  font-size: 16px;
 }
 .btn-primary {
   background-color: var(--purple);
@@ -711,17 +726,18 @@ path:hover {
   position: relative;
   scroll-behavior: smooth;
 }
-.users-table.archive {
+.users-table .table-archive {
   max-height: 600px;
-}
-.users-table.archive table {
   overflow-y: scroll;
 }
+/* .users-table.archive table {
+  overflow-y: scroll;
+} */
 .users-table .table-filter {
   border-bottom: 1px solid var(--border);
   padding: 0 20px;
 }
-.users-table .users-table .search input {
+.users-table .search input {
   width: 200px !important;
 }
 
@@ -766,7 +782,7 @@ path:hover {
   background-color: var(--secondry-color) !important;
   color: var(--font-color) !important;
   position: sticky;
-  top: -20px;
+  top: 0px;
   z-index: 10;
   font-size: 16px;
 }
@@ -789,6 +805,7 @@ table tbody tr {
   box-shadow: inset 0 0 0 9999px
     var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
 }
+
 /* ========== Scrollbar ========== */
 body ::-webkit-scrollbar {
   height: 1px;
@@ -856,6 +873,7 @@ body ::-webkit-scrollbar-thumb:hover {
 }
 
 /* ========== Status Indicator ========== */
+
 .status-indicator {
   display: inline-block;
   width: 10px;
@@ -908,6 +926,7 @@ body ::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto !important;
 }
 
 /* ========== Report Dropdown ========== */
@@ -916,10 +935,11 @@ body ::-webkit-scrollbar-thumb:hover {
   border-radius: 10 !important;
   font-size: 14px !important;
   color: var(--font-color);
+  width: 120px;
 }
 
 .dropdown.reportStatus .dropdown-toggle.new {
-  color: var(--color-new);
+  color: var(--color-new) !important;
   background-color: var(--bg-new) !important;
 }
 
@@ -1285,14 +1305,14 @@ input[type="tel"] {
 .login-img {
   width: 50%;
   height: 100%;
-  background: url(../imgs/Purplepine.jpg);
+  background: url(public/Purplepine.jpg);
   background-size: cover;
 }
 .login-info {
   padding: 30px;
 }
 .login-info p {
-  line-height: 1.2;
+  line-height: 1.5;
   color: #ffffffc2;
 }
 
@@ -1317,6 +1337,12 @@ input[type="tel"] {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+.btn.btn-secondary {
+  background-color: #6c757d !important;
+}
+.btn.btn-secondary:hover {
+  background-color: #5c636a !important;
 }
 .login .logoo i {
   font-size: 26px;

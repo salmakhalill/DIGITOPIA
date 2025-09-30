@@ -3,10 +3,19 @@ import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import "bootstrap/dist/css/bootstrap.min.css";
+// import { useNavigate } from "react-router-dom";
 
-const rowsPerPage = 20;
+const rowsPerPage = 10;
 
 const Users = () => {
+  // const navigate = useNavigate();
+  // const role = localStorage.getItem("role");
+  // useEffect(() => {
+  //   if (role !== "Admin") {
+  //     navigate("/unauthorized");
+  //   }
+  // }, []);
+
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,25 +31,46 @@ const Users = () => {
     const handleClickOutside = () => {
       setUsers((prev) => prev.map((u) => ({ ...u, showMenu: false })));
     };
-
     document.addEventListener("click", handleClickOutside);
-
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   // ===== Load Users =====
   useEffect(() => {
     async function loadUsers() {
+      const token = localStorage.getItem("accessToken");
+
       try {
-        const res = await fetch("/src/data/users.json");
+        const res = await fetch("http://127.0.0.1:8000/api/users/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`فشل تحميل المستخدمين: ${res.status}`);
+        }
+
         const data = await res.json();
-        const allUsers = Array.isArray(data) ? data : data.users || [];
-        setUsers(allUsers);
-        setFilteredUsers(allUsers);
+
+        const formatted = (Array.isArray(data) ? data : []).map((u) => ({
+          name: u.full_name || "—",
+          email: u.email,
+          role: u.role,
+          status: u.status === "active" ? "Active" : "Inactive",
+          createdAt: new Date(u.date_joined).toLocaleDateString("ar-EG"),
+          id: u.id,
+        }));
+
+        setUsers(formatted);
+        setFilteredUsers(formatted);
       } catch (err) {
-        console.error("خطأ في loadUsers:", err);
+        console.error("❌ خطأ في تحميل المستخدمين:", err);
       }
     }
+
     loadUsers();
   }, []);
 
@@ -48,7 +78,6 @@ const Users = () => {
   useEffect(() => {
     let temp = [...users];
 
-    // فلترة حسب الحالة
     if (filterStatus === "النشطاء") {
       temp = temp.filter((u) => (u.status || "").toLowerCase() === "active");
     } else if (filterStatus === "المحظورون") {
@@ -64,54 +93,99 @@ const Users = () => {
     }
 
     setFilteredUsers(temp);
-    setCurrentPage(1);
   }, [searchQuery, filterStatus, users]);
 
-  // ===== Add User =====
-  const handleAddUser = ({ name, email, role }) => {
-    const date = new Date();
-    const createdAt = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus]);
+
+  // ===== Add User (API) =====
+  const handleAddUser = async ({ name, email, role }) => {
+    const token = localStorage.getItem("accessToken");
     const newUser = {
-      name: name || "غير معروف",
+      full_name: name || "غير معروف",
       email: email || `user${Date.now()}@example.com`,
       role: role || "Employee",
-      status: "Active",
-      createdAt,
     };
-    setUsers((prev) => [newUser, ...prev]);
 
-    // Reset input fields
-    nameRef.current.value = "";
-    emailRef.current.value = "";
-    roleRef.current.value = "";
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/users/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!res.ok) throw new Error("فشل في إضافة المستخدم");
+
+      const savedUser = await res.json();
+      setUsers((prev) => [savedUser, ...prev]);
+
+      nameRef.current.value = "";
+      emailRef.current.value = "";
+      roleRef.current.value = "";
+    } catch (err) {
+      console.error("❌ خطأ في إضافة المستخدم:", err);
+    }
   };
 
-  // ===== Delete User =====
-  const handleDeleteUser = (email) => {
-    setUsers((prev) => prev.filter((u) => u.email !== email));
-    setUserToDelete(null);
+  // ===== Delete User (API) =====
+  const handleDeleteUser = async (id) => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/users/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(`فشل في حذف المستخدم: ${res.status}`);
+
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      setUserToDelete(null);
+    } catch (err) {
+      console.error("❌ خطأ في حذف المستخدم:", err);
+    }
   };
 
-  // ===== Block/Unblock =====
-  const handleToggleStatus = (email) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.email === email
-          ? {
-              ...u,
-              status:
-                (u.status || "").toLowerCase() === "active"
-                  ? "Inactive"
-                  : "Active",
-            }
-          : u
-      )
-    );
+  // ===== Block/Unblock (API) =====
+  const handleToggleStatus = async (id) => {
+    const token = localStorage.getItem("accessToken");
+    const user = users.find((u) => u.id === id);
+    if (!user) return;
+
+    const newStatus = user.status === "Active" ? "Inactive" : "Active";
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/users/${id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error(`فشل في تعديل الحالة: ${res.status}`);
+
+      const data = await res.json();
+      const updatedStatus = data.status;
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id ? { ...u, status: updatedStatus, showMenu: false } : u
+        )
+      );
+    } catch (err) {
+      console.error("❌ خطأ في تعديل الحالة:", err);
+    }
   };
 
-  // ===== Pagination Logic =====
+  // ===== Pagination =====
   const pageCount = Math.max(1, Math.ceil(filteredUsers.length / rowsPerPage));
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * rowsPerPage,
@@ -121,9 +195,7 @@ const Users = () => {
   const getVisiblePageNumbers = () => {
     const start = Math.floor((currentPage - 1) / 3) * 3 + 1;
     const pages = [];
-    for (let i = start; i < start + 3 && i <= pageCount; i++) {
-      pages.push(i);
-    }
+    for (let i = start; i < start + 3 && i <= pageCount; i++) pages.push(i);
     return pages;
   };
 
@@ -257,7 +329,6 @@ const Users = () => {
       <div className="users-table mt-3">
         <div className="table-filter d-flex align-items-center justify-content-between pb-3">
           <select
-           
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -272,15 +343,16 @@ const Users = () => {
               placeholder="الاسم"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ maxWidth: "250px" }}
+              style={{ paddingRight: "35px" }}
             />
           </div>
         </div>
 
         {/* Users Table */}
-        <table className="table table-striped">
+        <table className="table ">
           <thead>
             <tr>
+              <th>ID</th>
               <th>الاسم</th>
               <th>البريد الإلكتروني</th>
               <th>الدور</th>
@@ -292,20 +364,17 @@ const Users = () => {
           <tbody>
             {paginatedUsers.map((user) => (
               <tr key={user.email}>
+                <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td className="status">
                   <span
                     className={`status-indicator ${
-                      user.status === "Active"
-                        ? "active"
-                        : user.status === "Inactive"
-                        ? "inactive"
-                        : ""
+                      user.status === "Active" ? "active" : "inactive"
                     }`}
                   ></span>
-                  {user.status}
+                  {user.status === "Active" ? "Active" : "Inactive"}
                 </td>
 
                 <td>{user.createdAt}</td>
@@ -313,15 +382,14 @@ const Users = () => {
                   <div
                     className="dropdown"
                     style={{ position: "relative" }}
-                    onClick={(e) => e.stopPropagation()} // تمنع إغلاق القائمة عند الضغط داخلها
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {/* الزر اللي بيفتح القائمة */}
                     <button
                       className="btn-sm drop"
                       onClick={() =>
                         setUsers((prev) =>
                           prev.map((u) =>
-                            u.email === user.email
+                            u.id === user.id
                               ? { ...u, showMenu: !u.showMenu }
                               : u
                           )
@@ -331,7 +399,6 @@ const Users = () => {
                       ⋮
                     </button>
 
-                    {/* القائمة */}
                     {user.showMenu && (
                       <ul
                         className="dropdown-menu"
@@ -347,20 +414,11 @@ const Users = () => {
                         <li>
                           <button
                             className="dropdown-item d-flex justify-content-center align-items-center"
-                            onClick={() => {
-                              handleToggleStatus(user.email);
-                              setUsers((prev) =>
-                                prev.map((u) =>
-                                  u.email === user.email
-                                    ? { ...u, showMenu: false }
-                                    : u
-                                )
-                              );
-                            }}
+                            onClick={() => handleToggleStatus(user.id)}
                           >
                             <i
                               className={`fa-solid ${
-                                user.status === "Active"
+                                user.status === "active"
                                   ? "fa-ban"
                                   : "fa-unlock"
                               } m-1`}
@@ -372,14 +430,15 @@ const Users = () => {
                             </span>
                           </button>
                         </li>
+
                         <li>
                           <button
                             className="dropdown-item d-flex justify-content-center align-items-center"
                             onClick={() => {
-                              setUserToDelete(user.email);
+                              setUserToDelete(user.id);
                               setUsers((prev) =>
                                 prev.map((u) =>
-                                  u.email === user.email
+                                  u.id === user.id
                                     ? { ...u, showMenu: false }
                                     : u
                                 )
@@ -403,65 +462,94 @@ const Users = () => {
 
         {/* Pagination & Export */}
         <div className="d-flex justify-content-between align-items-center mt-3">
-          {/* Pagination */}
-          <ul className="pagination mb-0">
-            {/* prev3 */}
-            <li
-              className={`page-item ${currentPage <= 3 ? "disabled" : ""}`}
-              onClick={() => handlePageChange(currentPage - 3)}
-            >
-              <a className="page-link" href="#!">
-                &laquo;
-              </a>
-            </li>
-
-            {/* prev */}
-            <li
-              className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-              onClick={() => handlePageChange(currentPage - 1)}
-            >
-              <a className="page-link" href="#!">
-                &lsaquo;
-              </a>
-            </li>
-
-            {/* numbers */}
-            {getVisiblePageNumbers().map((num) => (
-              <li
-                key={num}
-                className={`page-item ${currentPage === num ? "active" : ""}`}
-                onClick={() => handlePageChange(num)}
-              >
-                <a className="page-link" href="#!">
-                  {num}
+          <nav aria-label="Page navigation">
+            <ul className="pagination">
+              {/* prev 3 */}
+              <li className={`page-item ${currentPage <= 3 ? "disabled" : ""}`}>
+                <a
+                  href="#"
+                  className="page-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage - 3);
+                  }}
+                >
+                  &laquo;
                 </a>
               </li>
-            ))}
 
-            {/* next */}
-            <li
-              className={`page-item ${
-                currentPage === pageCount ? "disabled" : ""
-              }`}
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              <a className="page-link" href="#!">
-                &rsaquo;
-              </a>
-            </li>
+              {/* prev 1 */}
+              <li
+                className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+              >
+                <a
+                  href="#"
+                  className="page-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage - 1);
+                  }}
+                >
+                  &lsaquo;
+                </a>
+              </li>
 
-            {/* next3 */}
-            <li
-              className={`page-item ${
-                currentPage >= pageCount - 2 ? "disabled" : ""
-              }`}
-              onClick={() => handlePageChange(currentPage + 3)}
-            >
-              <a className="page-link" href="#!">
-                &raquo;
-              </a>
-            </li>
-          </ul>
+              {/* numbers */}
+              {getVisiblePageNumbers().map((num) => (
+                <li
+                  key={num}
+                  className={`page-item ${currentPage === num ? "active" : ""}`}
+                >
+                  <a
+                    href="#"
+                    className="page-link"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(num);
+                    }}
+                  >
+                    {num}
+                  </a>
+                </li>
+              ))}
+
+              {/* next 1 */}
+              <li
+                className={`page-item ${
+                  currentPage === pageCount ? "disabled" : ""
+                }`}
+              >
+                <a
+                  href="#"
+                  className="page-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage + 1);
+                  }}
+                >
+                  &rsaquo;
+                </a>
+              </li>
+
+              {/* next 3 */}
+              <li
+                className={`page-item ${
+                  currentPage >= pageCount - 2 ? "disabled" : ""
+                }`}
+              >
+                <a
+                  href="#"
+                  className="page-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage + 3);
+                  }}
+                >
+                  &raquo;
+                </a>
+              </li>
+            </ul>
+          </nav>
 
           {/* Export Buttons */}
           <div className="d-flex gap-2">
