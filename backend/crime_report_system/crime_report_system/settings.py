@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +28,33 @@ SECRET_KEY = 'django-insecure-5qn2jp5e2u#^ll@gso19@%(6%3+gxqsdva)4#!(=yzmg%nvgf5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1), 
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# REST_FRAMEWORK = {
+#     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+#     "PAGE_SIZE": 10,  # أو 100
+# }
+
+# AUTHENTICATION_BACKENDS = [
+#     "accounts.backends.EmailOrUsernameModelBackend",  # username OR email
+#     "django.contrib.auth.backends.ModelBackend",
+# ]
 
 # Application definition
 
@@ -36,6 +63,7 @@ INSTALLED_APPS = [
     'analytics',
     'rest_framework',  
     'reports',
+    'accounts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +85,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
+    "https://securereport.netlify.app",
 ]
 
 
@@ -89,6 +119,25 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+if os.getenv("DATABASE_URL"):
+    DATABASES["default"] = dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "railway", 
+#         "USER": "postgres",
+#         "PASSWORD": "rBIbkPIvkulZkNlzgMSmRomgrEteSveU",
+#         "HOST": "nozomi.proxy.rlwy.net",
+#         "PORT": "41446",
+#     }
+# }
+
 
 
 # Password validation
@@ -126,6 +175,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

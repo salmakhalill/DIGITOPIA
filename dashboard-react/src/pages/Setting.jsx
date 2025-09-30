@@ -17,9 +17,14 @@ const Setting = () => {
     email: loadSetting("account_email", ""),
   });
 
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+  });
+
   const [appearance, setAppearance] = useState({
     theme: loadSetting("appearance_theme", "داكن"),
-    font: loadSetting("appearance_font", "Segoe UI"),
+    font: loadSetting("appearance_font", "Cairo"),
     color: loadSetting("appearance_color", defaultColor),
   });
 
@@ -40,11 +45,40 @@ const Setting = () => {
     document.documentElement.style.setProperty("--purple", appearance.color);
   }, [appearance]);
 
-  const handleAccountSubmit = (e) => {
+  const handleAccountSubmit = async (e) => {
     e.preventDefault();
     saveSetting("account_name", account.name);
     saveSetting("account_email", account.email);
-    alert("تم حفظ إعدادات الحساب");
+
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/account/", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          full_name: account.full_name,
+          email: account.email,
+          current_password: passwords.current_password,
+          new_password: passwords.new_password,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`فشل التحديث: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("✅ تم تحديث الحساب:", data);
+      alert("✅ تم حفظ إعدادات الحساب وتحديثها في السيرفر");
+      setPasswords({ current: "", new: "" });
+    } catch (err) {
+      console.error("❌ خطأ أثناء تحديث الحساب:", err);
+      alert("❌ حدث خطأ أثناء تحديث إعدادات الحساب");
+    }
   };
 
   const handleAppearanceSubmit = (e) => {
@@ -89,7 +123,6 @@ const Setting = () => {
                 إعدادات الحساب
               </a>
             </li>
-
             <li className="nav-item">
               <a className="nav-link" data-bs-toggle="tab" href="#appearance">
                 إعدادات الواجهة والمظهر
@@ -135,6 +168,32 @@ const Setting = () => {
                         setAccount({ ...account, email: e.target.value })
                       }
                       placeholder="user@example.com"
+                    />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">كلمة المرور الحالية</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={passwords.current}
+                      onChange={(e) =>
+                        setPasswords({ ...passwords, current: e.target.value })
+                      }
+                      placeholder="********"
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">كلمة مرور جديدة</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={passwords.new}
+                      onChange={(e) =>
+                        setPasswords({ ...passwords, new: e.target.value })
+                      }
+                      placeholder="********"
                     />
                   </div>
                 </div>
@@ -190,7 +249,7 @@ const Setting = () => {
                       />
                       <button
                         type="button"
-                        className="btn btn-secondary btn-sm "
+                        className="btn btn-secondary btn-sm"
                         onClick={resetColor}
                       >
                         استرجاع الافتراضي
@@ -220,23 +279,6 @@ const Setting = () => {
                   />
                   <label className="form-check-label" htmlFor="emailNoti">
                     إشعارات البريد الإلكتروني
-                  </label>
-                </div>
-                <div className="form-check mb-2">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="pushNoti"
-                    checked={notifications.push}
-                    onChange={(e) =>
-                      setNotifications({
-                        ...notifications,
-                        push: e.target.checked,
-                      })
-                    }
-                  />
-                  <label className="form-check-label" htmlFor="pushNoti">
-                    إشعارات داخل التطبيق
                   </label>
                 </div>
                 <div className="form-check mb-2">

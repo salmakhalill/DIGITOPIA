@@ -5,19 +5,19 @@ function TrackReport() {
   const [timeline, setTimeline] = useState([]);
 
   const statusMap = {
-    received: "تم استلام البلاغ",
-    under_review: "قيد المراجعة",
-    in_progress: "قيد المعالجة",
-    resolved: "تم الحل",
-    closed: "تم الإغلاق",
+    "تم استلام البلاغ": "تم استلام البلاغ",
+    "قيد المراجعة": "قيد المراجعة",
+    "قيد المعالجة": "قيد المعالجة",
+    "تم الحل": "تم الحل",
+    "تم الإغلاق": "تم الإغلاق",
   };
 
   const stepMessages = {
-    received: "تم تسجيل البلاغ لدينا",
-    under_review: "البلاغ تحت التدقيق الآن",
-    in_progress: "الفريق يعمل على معالجة البلاغ",
-    resolved: "تم حل المشكلة بنجاح",
-    closed: "تم إغلاق البلاغ",
+    "تم استلام البلاغ": "تم تسجيل البلاغ لدينا",
+    "قيد المراجعة": "البلاغ تحت التدقيق الآن",
+    "قيد المعالجة": "الفريق يعمل على معالجة البلاغ",
+    "تم الحل": "تم حل المشكلة بنجاح",
+    "تم الإغلاق": "تم إغلاق البلاغ",
   };
 
   useEffect(() => {
@@ -29,27 +29,52 @@ function TrackReport() {
       const trackingId = document.querySelector("#tracking").value;
 
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/reports/track/${trackingId}/`);
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/reports/track/${trackingId}/`
+        );
         const data = await res.json();
 
         if (res.ok) {
           setReport(data);
 
-          const steps = [
-            "received",
-            "under_review",
-            "in_progress",
-            "resolved",
-            "closed",
-          ];
-          const activeIndex = steps.indexOf(data.case_status);
-
-          const timelineData = steps.map((step, index) => ({
-            key: step,
-            label: statusMap[step],
-            message: stepMessages[step],
-            active: index <= activeIndex,
-          }));
+          let timelineData = [];
+          if (data.status === "تم الإغلاق") {
+            timelineData = [
+              {
+                key: "تم استلام البلاغ",
+                label: statusMap["تم استلام البلاغ"],
+                message: stepMessages["تم استلام البلاغ"],
+                active: true,
+              },
+              {
+                key: "قيد المراجعة",
+                label: statusMap["قيد المراجعة"],
+                message: stepMessages["قيد المراجعة"],
+                active: true,
+              },
+              {
+                key: "تم الإغلاق",
+                label: statusMap["تم الإغلاق"],
+                message: "🚫 البلاغ تم إغلاقه: الأدلة غير كافية",
+                active: true,
+                isCancelled: true,
+              },
+            ];
+          } else {
+            const steps = [
+              "تم استلام البلاغ",
+              "قيد المراجعة",
+              "قيد المعالجة",
+              "تم الحل",
+            ];
+            const activeIndex = steps.indexOf(data.status);
+            timelineData = steps.map((step, index) => ({
+              key: step,
+              label: statusMap[step],
+              message: stepMessages[step],
+              active: index <= activeIndex,
+            }));
+          }
 
           setTimeline(timelineData);
 
@@ -65,7 +90,6 @@ function TrackReport() {
     };
   }, []);
 
-  // دالة لتنسيق التاريخ بالعربي
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString("ar-EG", options);
@@ -74,7 +98,6 @@ function TrackReport() {
   return (
     <main>
       <div className="tracking mt-3">
-        {/* شاشة إدخال ID */}
         <div className="container track-report active">
           <h1 className="report-title">تابع بلاغك خطوة بخطوة</h1>
           <p className="report-subtitle text-black-50 ms-3 me-3">
@@ -101,7 +124,6 @@ function TrackReport() {
           </div>
         </div>
 
-        {/* تفاصيل البلاغ + Timeline */}
         <div className="report-timeline">
           {report && (
             <>
@@ -120,7 +142,7 @@ function TrackReport() {
                   </div>
                   <div>
                     <strong>الحالة الحالية:</strong>{" "}
-                    {statusMap[report.case_status] || report.case_status}
+                    {statusMap[report.status] || report.status}
                   </div>
                 </div>
               </div>
@@ -128,29 +150,36 @@ function TrackReport() {
               <h3>تتبع حالة البلاغ</h3>
               <ul className="timeline">
                 {timeline.map((step) => (
-                  <li key={step.key} className={step.active ? "active" : ""}>
+                  <li
+                    key={step.key}
+                    className={`${step.active ? "active" : ""} ${
+                      step.isCancelled ? "cancelled" : ""
+                    }`}
+                  >
                     <div className="icon">
-                      {step.key === "received" && (
+                      {step.key === "تم استلام البلاغ" && (
                         <i className="fa-solid fa-envelope-open"></i>
                       )}
-                      {step.key === "under_review" && (
+                      {step.key === "قيد المراجعة" && (
                         <i className="fa-solid fa-search"></i>
                       )}
-                      {step.key === "in_progress" && (
+                      {step.key === "قيد المعالجة" && (
                         <i className="fa-solid fa-cogs"></i>
                       )}
-                      {step.key === "resolved" && (
+                      {step.key === "تم الحل" && (
                         <i className="fa-solid fa-check-circle"></i>
                       )}
-                      {step.key === "closed" && (
-                        <i className="fa-solid fa-folder-closed"></i>
+                      {step.key === "تم الإغلاق" && (
+                        <i className="fa-solid fa-times-circle"></i>
                       )}
                     </div>
                     <div className="desc">
-                      <p>{step.label}</p>
-                      <span>
-                        {step.active ? step.message : "لم يتم الوصول إليها بعد"}
-                      </span>
+                      <p
+                        style={{ color: step.isCancelled ? "red" : "black" }}
+                      >
+                        {step.label}
+                      </p>
+                      <span>{step.message}</span>
                     </div>
                   </li>
                 ))}

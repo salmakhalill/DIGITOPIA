@@ -1,23 +1,30 @@
-import { NavLink } from "react-router-dom";
-// import "./Sidebar.css";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+    window.location.reload();
+  };
+
   return (
     <div className="sidebar text-center">
-      <div className="logo position-relative fw-bold pt-4 pb-4 text-white d-flex align-items-center justify-content-center">
-        <div className="icon me-2">
+      <div className="logo position-relative fw-bold pt-4 pb-4 text-white d-flex align-items-center justify-content-center text-center">
+        <div className="icon me-1">
           <span className="petal p1"></span>
           <span className="petal p2"></span>
           <span className="petal p3"></span>
           <span className="petal p4"></span>
         </div>
-        <span className="logo-text">لوحة التحكم</span>
+        <span className="logo-text">SecureReport</span>
       </div>
 
       <ul className="list-unstyled text-center nav">
         <li>
           <NavLink
-            to="/"
+            to="/dashboard"
             end
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ms-10 me-10 ${
@@ -31,7 +38,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/received-report"
+            to="/dashboard/received-report"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -44,7 +51,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/statistics"
+            to="/dashboard/statistics"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -57,7 +64,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/users"
+            to="/dashboard/users"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -70,7 +77,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/setting"
+            to="/dashboard/setting"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -83,7 +90,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/archive"
+            to="/dashboard/archive"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -96,7 +103,7 @@ const Sidebar = () => {
         </li>
         <li>
           <NavLink
-            to="/privacy"
+            to="/dashboard/privacy"
             className={({ isActive }) =>
               `d-flex align-items-center fs-14 c-black rad-6 p-10 ${
                 isActive ? "active" : ""
@@ -106,6 +113,15 @@ const Sidebar = () => {
             <i className="fa-solid fa-user-shield ms-2"></i>
             <span>سياسة الخصوصية</span>
           </NavLink>
+        </li>
+        <li>
+          <button
+            onClick={handleLogout}
+            className="d-flex align-items-center fs-14 c-black rad-6 p-10 w-100 bg-transparent border-0 me-1"
+          >
+            <i className="fa-solid fa-arrow-right-from-bracket ms-2"></i>
+            <span>تسجيل الخروج</span>
+          </button>
         </li>
       </ul>
     </div>

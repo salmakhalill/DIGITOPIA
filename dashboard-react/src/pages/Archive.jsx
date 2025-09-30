@@ -12,14 +12,27 @@ const Archive = () => {
 
   // fetch data from archive.json
   useEffect(() => {
-    fetch("/src/data/archive.json")
-      .then((res) => res.json())
+    const token = localStorage.getItem("accessToken");
+
+    fetch("http://127.0.0.1:8000/api/reports/archive/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("فشل تحميل البيانات");
+        }
+        return res.json();
+      })
       .then((data) => {
-        const reportsArray = Object.values(data.reports);
+        const reportsArray = Array.isArray(data) ? data : [];
         setReports(reportsArray);
         setFilteredReports(reportsArray);
       })
-      .catch((err) => console.error("Error loading archive.json:", err));
+      .catch((err) => console.error("❌ Error loading archive:", err));
   }, []);
 
   // handle filtering + search
@@ -151,6 +164,7 @@ const Archive = () => {
   };
 
   const escapeHtml = (text) => {
+    if (text === null || text === undefined) return "";
     const map = {
       "&": "&amp;",
       "<": "&lt;",
@@ -164,7 +178,7 @@ const Archive = () => {
   return (
     <div className="wrapperr mt-5 mb-5">
       <div className="users-head d-flex align-items-center justify-content-between">
-        <h3 className="fw-bold">أرشيف البلاغات</h3>
+        <h2 className="fw-bold">أرشيف البلاغات</h2>
         <div className="export-buttons d-flex gap-2">
           <button onClick={exportToExcel} className="btn btn-success btn-sm">
             📤 Excel
@@ -196,151 +210,152 @@ const Archive = () => {
             />
           </div>
         </div>
+        <div className="table-archive">
+          <table className="table archive">
+            <thead>
+              <tr>
+                <th scope="col">id</th>
+                <th scope="col">نوع البلاغ</th>
+                <th scope="col">العنوان</th>
+                <th scope="col">الدور</th>
+                <th scope="col">التاريخ</th>
+                <th scope="col">الحالة</th>
+                <th scope="col">عرض المزيد</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReports.map((report) => (
+                <tr key={report.id}>
+                  <th scope="row" className="id">
+                    {report.id}
+                  </th>
+                  <td>{report.report_type}</td>
+                  <td>{report.location}</td>
+                  <td>{report.contact_info}</td>
+                  <td>{report.incident_date}</td>
+                  <td className="status ">
+                    <span
+                      className={`status-indicator ${
+                        report.status === "تم الحل"
+                          ? "active"
+                          : report.status === "تم الغلق" ||
+                            report.status === "تم الإغلاق"
+                          ? "inactive"
+                          : ""
+                      }`}
+                    ></span>
+                    {report.status}
+                  </td>
+                  <td>
+                    {/* Modal Trigger */}
+                    <button
+                      className="btn-primary btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target={`#reportModal${report.id}`}
+                    >
+                      عرض المزيد
+                    </button>
 
-        <table className="table archive">
-          <thead>
-            <tr>
-              <th scope="col">id</th>
-              <th scope="col">نوع البلاغ</th>
-              <th scope="col">العنوان</th>
-              <th scope="col">الدور</th>
-              <th scope="col">التاريخ</th>
-              <th scope="col">الحالة</th>
-              <th scope="col">عرض المزيد</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredReports.map((report) => (
-              <tr key={report.id}>
-                <th scope="row" className="id">
-                  {report.id}
-                </th>
-                <td>{report.report_type}</td>
-                <td>{report.location}</td>
-                <td>{report.contact_info}</td>
-                <td>{report.incident_date}</td>
-                <td className="status ">
-                  <span
-                    className={`status-indicator ${
-                      report.status === "تم الحل"
-                        ? "active"
-                        : report.status === "تم الغلق" ||
-                          report.status === "تم الإغلاق"
-                        ? "inactive"
-                        : ""
-                    }`}
-                  ></span>
-                  {report.status}
-                </td>
-                <td>
-                  {/* Modal Trigger */}
-                  <button
-                    className="btn-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target={`#reportModal${report.id}`}
-                  >
-                    عرض المزيد
-                  </button>
-
-                  {/* Modal */}
-                  <div
-                    className="modal fade"
-                    id={`reportModal${report.id}`}
-                    tabIndex="-1"
-                    aria-labelledby={`reportModalLabel${report.id}`}
-                    aria-hidden="true"
-                  >
-                    <div className="modal-dialog modal-xl modal-dialog-scrollable">
-                      <div className="modal-content">
-                        <div className="modal-header p-3">
-                          <h5
-                            className="modal-title"
-                            id={`reportModalLabel${report.id}`}
-                          >
-                            تفاصيل البلاغ #{report.id}
-                          </h5>
-                        </div>
-                        <div className="modal-body p-3 text-white-100">
-                          <p>
-                            <strong>نوع البلاغ:</strong> {report.report_type}
-                          </p>
-                          <p>
-                            <strong>العنوان:</strong>{" "}
-                            <a
-                              href={report.location_link}
-                              target="_blank"
-                              rel="noreferrer"
+                    {/* Modal */}
+                    <div
+                      className="modal fade"
+                      id={`reportModal${report.id}`}
+                      tabIndex="-1"
+                      aria-labelledby={`reportModalLabel${report.id}`}
+                      aria-hidden="true"
+                    >
+                      <div className="modal-dialog modal-xl modal-dialog-scrollable">
+                        <div className="modal-content">
+                          <div className="modal-header p-3">
+                            <h5
+                              className="modal-title"
+                              id={`reportModalLabel${report.id}`}
                             >
-                              {report.location}
-                            </a>
-                          </p>
-                          <p>
-                            <strong>التاريخ:</strong> {report.incident_date}
-                          </p>
-                          <p>
-                            <strong>معلومات الاتصال:</strong>{" "}
-                            {report.contact_info}
-                          </p>
-                          <p>
-                            <strong>حالة البلاغ:</strong> {report.status}
-                          </p>
+                              تفاصيل البلاغ #{report.id}
+                            </h5>
+                          </div>
+                          <div className="modal-body p-3 text-white-100">
+                            <p>
+                              <strong>نوع البلاغ:</strong> {report.report_type}
+                            </p>
+                            <p>
+                              <strong>العنوان:</strong>{" "}
+                              <a
+                                href={report.location_link}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {report.location}
+                              </a>
+                            </p>
+                            <p>
+                              <strong>التاريخ:</strong> {report.incident_date}
+                            </p>
+                            <p>
+                              <strong>معلومات الاتصال:</strong>{" "}
+                              {report.contact_info}
+                            </p>
+                            <p>
+                              <strong>حالة البلاغ:</strong> {report.status}
+                            </p>
 
-                          <hr />
-                          <p>
-                            <strong>تفاصيل البلاغ:</strong>{" "}
-                            {report.report_details}
-                          </p>
+                            <hr />
+                            <p>
+                              <strong>تفاصيل البلاغ:</strong>{" "}
+                              {report.report_details}
+                            </p>
 
-                          <hr />
-                          <p>
-                            <strong>معلومات الجناة:</strong>
-                          </p>
-                          <ul>
-                            {report.criminal_infos.map((c, idx) => (
-                              <li key={idx}>
-                                {c.name} - {c.description}{" "}
-                                {c.other_info ? `- ${c.other_info}` : ""}
-                              </li>
-                            ))}
-                          </ul>
+                            <hr />
+                            <p>
+                              <strong>معلومات الجناة:</strong>
+                            </p>
+                            <ul>
+                              {report.criminal_infos.map((c, idx) => (
+                                <li key={idx}>
+                                  {c.name} - {c.description}{" "}
+                                  {c.other_info ? `- ${c.other_info}` : ""}
+                                </li>
+                              ))}
+                            </ul>
 
-                          <hr />
-                          <p>
-                            <strong>المرفقات:</strong>
-                          </p>
-                          <ul>
-                            {report.attachments.map((a, idx) => (
-                              <li key={idx}>
-                                {a.file ? (
-                                  <a
-                                    href={a.file}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    📎 ملف
-                                  </a>
-                                ) : a.audio_recording ? (
-                                  <a
-                                    href={a.audio_recording}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    🎤 تسجيل صوتي
-                                  </a>
-                                ) : null}
-                              </li>
-                            ))}
-                          </ul>
+                            <hr />
+                            <p>
+                              <strong>المرفقات:</strong>
+                            </p>
+                            <ul>
+                              {report.attachments.map((a, idx) => (
+                                <li key={idx}>
+                                  {a.file ? (
+                                    <a
+                                      href={a.file}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      📎 ملف
+                                    </a>
+                                  ) : a.audio_recording ? (
+                                    <a
+                                      href={a.audio_recording}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      🎤 تسجيل صوتي
+                                    </a>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  {/* End Modal */}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    {/* End Modal */}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -43,16 +43,35 @@ const Statistics = () => {
   }, [getThemeColors]);
 
   // ---------------- Fetch ----------------
+
   const getDashboardData = useCallback(async (year, location) => {
-    let url = "http://127.0.0.1:8000/api/dashboard/";
+    const token = localStorage.getItem("accessToken");
+    let url = "http://127.0.0.1:8000/api/analytics/stats/";
+
     const params = new URLSearchParams();
     if (year) params.append("year", year);
     if (location) params.append("location", location);
     if ([...params].length > 0) url += "?" + params.toString();
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("API request failed");
-    return await response.json();
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`فشل تحميل البيانات: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error("❌ خطأ في تحميل بيانات لوحة التحكم:", err);
+      throw err;
+    }
   }, []);
 
   const loadData = useCallback(async () => {
@@ -76,7 +95,6 @@ const Statistics = () => {
     const monthly = data?.charts?.monthly_reports
       ? Object.entries(data.charts.monthly_reports).slice(-12)
       : [];
-
 
     // Line Chart
     const lineCtx = document.getElementById("reportsChart");
@@ -172,7 +190,7 @@ const Statistics = () => {
             {
               label: "عدد البلاغات حسب النوع",
               data: Object.values(data.charts.report_type_distribution),
-             backgroundColor: "rgba(124, 58, 237, 0.7)",
+              backgroundColor: "rgba(124, 58, 237, 0.7)",
               borderColor: "rgba(70, 47, 138, 1)",
               hoverBackgroundColor: "rgba(70, 47, 138, 1)",
               borderWidth: 1,
@@ -197,11 +215,11 @@ const Statistics = () => {
     }
 
     // Heatmap
-   
+
     updateChartsColors();
   }, [data, getThemeColors, updateChartsColors]);
   // maaaaaaaaaaaaaaaaaaaap
- const convertLatLngToXY = (lat, lng) => {
+  const convertLatLngToXY = (lat, lng) => {
     const minLat = 21.72474;
     const maxLat = 31.66768;
     const minLng = 24.697924;
@@ -214,7 +232,7 @@ const Statistics = () => {
 
     return { x, y };
   };
-  
+
   // ---------------- Resize & Theme ----------------
   useEffect(() => {
     const handleResize = () => {
@@ -269,8 +287,8 @@ const Statistics = () => {
     "مطروح",
   ];
 
- return (
-    <div className="wrapperr mt-5 mb-5">
+  return (
+    <div className="wrapperr">
       {/* Dashboard Header */}
       <div className="dashboard-content row align-items-center">
         <div className="info col-12 col-lg-6">

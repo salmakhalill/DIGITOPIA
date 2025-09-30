@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 
 const rowPerPage = 10;
 const statusMap = {
+  "تم استلام البلاغ": "تم استلام البلاغ",
+  "قيد المراجعة": "قيد المراجعة",
+  "قيد المعالجة": "قيد المعالجة",
+  "تم الحل": "تم الحل",
+  "تم الإغلاق": "تم الإغلاق",
+};
+const arabicToClass = {
   "تم استلام البلاغ": "new",
   "قيد المراجعة": "review",
   "قيد المعالجة": "process",
@@ -10,10 +17,24 @@ const statusMap = {
 };
 
 const severityColors = {
+   حرج: "text-danger fw-bold",
   عالية: "text-danger fw-bold",
-  متوسطة: "text-warning fw-bold", 
-  منخفضة: "text-success fw-bold", 
+  متوسطة: "text-warning fw-bold",
+  منخفضة: "text-success fw-bold",
 };
+
+// escaping from shrouq attacks
+function escapeHtml(text) {
+  if (!text) return "";
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.toString().replace(/[&<>"']/g, (m) => map[m]);
+}
 
 const ReceivedReports = () => {
   const [reports, setReports] = useState([]);
@@ -25,14 +46,31 @@ const ReceivedReports = () => {
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   useEffect(() => {
-    fetch("/src/data/report.json")
-      .then((res) => res.json())
-      .then((data) => {
-        const r = Object.values(data.reports);
-        setReports(r);
-        setFilteredReports(r);
-      });
-  }, []);
+  const token = localStorage.getItem("accessToken");
+
+  fetch("http://127.0.0.1:8000/api/reports/", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`فشل تحميل البيانات: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      const reportsArray = Array.isArray(data) ? data : [];
+      setReports(reportsArray);
+      setFilteredReports(reportsArray);
+    })
+    .catch((err) => console.error("❌ خطأ في تحميل التقارير:", err));
+}, []);
+
+
+
 
   // ===== Filters & Search =====
   useEffect(() => {
@@ -81,16 +119,28 @@ const ReceivedReports = () => {
   };
 
   const updateStatus = (id, status) => {
-    setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-    fetch(`/api/reports/${id}/status`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+  const token = localStorage.getItem("accessToken");
+
+  setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+
+  fetch(`http://127.0.0.1:8000/api/reports/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`فشل التحديث: ${res.status}`);
+      }
+      return res.json();
     })
-      .then((res) => res.json())
-      .then((data) => console.log("تم التحديث:", data))
-      .catch((err) => console.error(err));
-  };
+    .then((data) => console.log("✅ تم التحديث:", data))
+    .catch((err) => console.error("❌ خطأ أثناء التحديث:", err));
+};
+
 
   return (
     <div className="wrapperr mt-5 mb-5">
@@ -100,8 +150,7 @@ const ReceivedReports = () => {
 
       <div className="users-table">
         <div className="table-filter d-flex align-items-center justify-content-between pb-3">
-          {/* الفلاتر */}
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-3">
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
@@ -110,18 +159,18 @@ const ReceivedReports = () => {
               <option value="المستلمة">المستلمة</option>
               <option value="قيد المراجعة">قيد المراجعة</option>
               <option value="قيد المعالجة">قيد المعالجة</option>
-              <option value="المحلولة">المحلولة</option>
-              <option value="المغلقة">المغلقة</option>
             </select>
 
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
             >
-              <option value="الكل">حالة البلاغ</option>
-              <option value="عالية">حرجة</option>
-              <option value="متوسطة">متوسطة</option>
-              <option value="منخفضة">منخفضة</option>
+             <option value="الكل">حالة البلاغ</option>
+             <option value="حرج">حرجة</option>
+             <option value="عالية">عالية</option>
+             <option value="متوسطة">متوسطة</option>
+             <option value="منخفضة">منخفضة</option>
+
             </select>
           </div>
 
@@ -143,7 +192,6 @@ const ReceivedReports = () => {
               <th>شدة البلاغ</th>
               <th>نوع البلاغ</th>
               <th>العنوان</th>
-              <th>الدور</th>
               <th>التاريخ</th>
               <th>الحالة</th>
               <th>عرض المزيد</th>
@@ -161,19 +209,18 @@ const ReceivedReports = () => {
                         severityColors[report.severity] || "text-muted"
                       }
                     >
-                      {report.severity || "غير محدد"}
+                      {escapeHtml(report.severity) || "غير محدد"}
                     </span>
                   </td>
-                  <td>{report.report_type}</td>
-                  <td>{report.location}</td>
-                  <td>{report.contact_info}</td>
-                  <td>{report.incident_date}</td>
+                  <td>{escapeHtml(report.report_type)}</td>
+                  <td>{escapeHtml(report.location)}</td>
+                  <td>{escapeHtml(report.incident_date)}</td>
                   <td>
                     {/* Dropdown */}
                     <div className="dropdown reportStatus">
                       <button
                         className={`btn btn-secondary dropdown-toggle ${
-                          statusMap[report.status]
+                          arabicToClass[report.status]
                         }`}
                         onClick={() =>
                           setOpenDropdownId(
@@ -181,27 +228,27 @@ const ReceivedReports = () => {
                           )
                         }
                       >
-                        {report.status || "اختر الحالة"}
+                        {escapeHtml(report.status) || "اختر الحالة"}
                       </button>
                       <ul
                         className={`dropdown-menu ${
                           openDropdownId === report.id ? "show" : ""
                         }`}
                       >
-                        {statusOptions.map((status) => (
+                        {Object.keys(statusMap).map((status) => (
                           <li key={status}>
                             <a
                               href="#"
-                              className={`dropdown-item ${statusMap[status]} ${
-                                report.status === status ? "active" : ""
-                              }`}
+                              className={`dropdown-item ${
+                                arabicToClass[status]
+                              } ${report.status === status ? "active" : ""}`}
                               onClick={(e) => {
                                 e.preventDefault();
                                 updateStatus(report.id, status);
                                 setOpenDropdownId(null);
                               }}
                             >
-                              {status}
+                              {escapeHtml(status)}
                             </a>
                           </li>
                         ))}
@@ -245,23 +292,30 @@ const ReceivedReports = () => {
                           </div>
                           <div className="modal-body text-start">
                             <p>
-                              <strong>نوع البلاغ:</strong> {report.report_type}
+                              <strong>نوع البلاغ:</strong>{" "}
+                              {escapeHtml(report.report_type)}
                             </p>
                             <p>
                               <strong>العنوان (google maps):</strong>{" "}
-                              <a href={report.location_link} target="_blank">
-                                {report.location}
+                              <a
+                                href={report.location_link}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {escapeHtml(report.location)}
                               </a>
                             </p>
                             <p>
-                              <strong>التاريخ:</strong> {report.incident_date}
+                              <strong>التاريخ:</strong>{" "}
+                              {escapeHtml(report.incident_date)}
                             </p>
                             <p>
                               <strong>معلومات الاتصال:</strong>{" "}
-                              {report.contact_info}
+                              {escapeHtml(report.contact_info)}
                             </p>
                             <p>
-                              <strong>حالة البلاغ:</strong> {report.status}
+                              <strong>حالة البلاغ:</strong>{" "}
+                              {escapeHtml(report.status)}
                             </p>
                             <p>
                               <strong>شدة البلاغ:</strong>{" "}
@@ -271,13 +325,13 @@ const ReceivedReports = () => {
                                   "text-muted"
                                 }
                               >
-                                {report.severity || "غير محدد"}
+                                {escapeHtml(report.severity) || "غير محدد"}
                               </span>
                             </p>
                             <hr />
                             <p>
                               <strong>تفاصيل البلاغ:</strong>{" "}
-                              {report.report_details}
+                              {escapeHtml(report.report_details)}
                             </p>
                             <hr />
                             <p>
@@ -287,8 +341,11 @@ const ReceivedReports = () => {
                               {report.criminal_infos?.length
                                 ? report.criminal_infos.map((c, i) => (
                                     <li key={i}>
-                                      {c.name} - {c.description}{" "}
-                                      {c.other_info ? "- " + c.other_info : ""}
+                                      {escapeHtml(c.name)} -{" "}
+                                      {escapeHtml(c.description)}{" "}
+                                      {c.other_info
+                                        ? "- " + escapeHtml(c.other_info)
+                                        : ""}
                                     </li>
                                   ))
                                 : "لا يوجد معلومات"}
@@ -302,13 +359,18 @@ const ReceivedReports = () => {
                                 ? report.attachments.map((a, i) => (
                                     <li key={i}>
                                       {a.file ? (
-                                        <a href={a.file} target="_blank">
+                                        <a
+                                          href={a.file}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                        >
                                           {a.file}
                                         </a>
                                       ) : a.audio_recording ? (
                                         <a
                                           href={a.audio_recording}
                                           target="_blank"
+                                          rel="noreferrer"
                                         >
                                           {a.audio_recording}
                                         </a>
