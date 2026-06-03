@@ -26,7 +26,7 @@ const Home = () => {
  useEffect(() => {
   const token = localStorage.getItem("accessToken");
 
-  fetch(`https://salmakhalill.pythonanywhere.com/api/analytics/recent/?period=${period}`, {
+  fetch(`http://127.0.0.1:8000/api/analytics/recent/?period=${period}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

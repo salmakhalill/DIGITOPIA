@@ -53,7 +53,7 @@ const Setting = () => {
     const token = localStorage.getItem("accessToken");
 
     try {
-      const res = await fetch("https://salmakhalill.pythonanywhere.com/api/account/", {
+      const res = await fetch("http://127.0.0.1:8000/api/account/", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -62,8 +62,8 @@ const Setting = () => {
         body: JSON.stringify({
           full_name: account.full_name,
           email: account.email,
-          current_password: passwords.current,
-          new_password: passwords.new,
+          current_password: passwords.current_password,
+          new_password: passwords.new_password,
         }),
       });
 

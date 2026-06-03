@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
-
 
 const NewPassword = () => {
   const navigate = useNavigate();
-  const { uid, token } = useParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,16 +21,17 @@ const NewPassword = () => {
 
   try {
     const res = await fetch(
-  `https://salmakhalill.pythonanywhere.com/api/auth/password_reset_confirm/${uid}/${token}/`,
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      new_password: password,
-      confirm_password: confirmPassword,
-    }),
-  }
-);
+      "http://127.0.0.1:8000/api/auth/password_reset_confirm/",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,               // لازم تبعتي الإيميل كمان
+          new_password: password,
+          confirm_password: confirmPassword,
+        }),
+      }
+    );
 
     const data = await res.json();
 
