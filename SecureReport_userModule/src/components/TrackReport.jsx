@@ -30,7 +30,7 @@ function TrackReport() {
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/api/reports/track/${trackingId}/`
+          `https://salmakhalill.pythonanywhere.com/api/reports/track/${trackingId}/`
         );
         const data = await res.json();
 

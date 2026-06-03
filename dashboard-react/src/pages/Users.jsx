@@ -41,7 +41,7 @@ const Users = () => {
       const token = localStorage.getItem("accessToken");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/users/", {
+        const res = await fetch("https://salmakhalill.pythonanywhere.com/api/users/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const Users = () => {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/users/", {
+      const res = await fetch("https://salmakhalill.pythonanywhere.com/api/users/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +136,7 @@ const Users = () => {
     const token = localStorage.getItem("accessToken");
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/users/${id}/`, {
+      const res = await fetch(`https://salmakhalill.pythonanywhere.com/api/users/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,7 +161,7 @@ const Users = () => {
     const newStatus = user.status === "Active" ? "Inactive" : "Active";
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/users/${id}/`, {
+      const res = await fetch(`https://salmakhalill.pythonanywhere.com/api/users/${id}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

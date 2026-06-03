@@ -1,0 +1,79 @@
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to secureReport</title>
+</head>
+
+<body style="margin:0; padding:0; font-family:Arial, sans-serif; background-color:#f5f7fb;">
+
+  <!-- Container -->
+  <div style="max-width:600px; margin:40px auto; background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+
+    <!-- Header -->
+    <div style="background:#1f3c88; padding:18px 22px; display:flex; align-items:center; gap:10px;">
+
+      <!-- Logo -->
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L20 6V11C20 16.2 16.7 20.9 12 22C7.3 20.9 4 16.2 4 11V6L12 2Z"
+              stroke="#ffffff" stroke-width="1.6" fill="none"/>
+        <path d="M8.5 12.5L11 15L15.5 9.5"
+              stroke="#ffffff" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+
+      <!-- Brand -->
+      <h1 style="color:#ffffff; margin:0; font-size:20px; letter-spacing:0.5px;">
+        secureReport
+      </h1>
+
+    </div>
+
+    <!-- Body -->
+    <div style="padding:30px; text-align:center;">
+
+      <h2 style="color:#333; margin-bottom:10px;">
+        Welcome to secureReport 🎉
+      </h2>
+
+      <p style="color:#555; font-size:15px;">
+        You have been added to the system.
+      </p>
+
+      <p style="color:#333; font-size:16px; margin:20px 0;">
+        <strong>Your Role:</strong>
+        <span style="color:#1f3c88;">{{ user.role }}</span>
+      </p>
+
+      <p style="color:#666; font-size:14px;">
+        Please set your password to activate your account and start using the dashboard.
+      </p>
+
+      <!-- Button -->
+      <div style="margin:30px 0;">
+        <a href="{{ reset_link }}"
+           style="background:#1f3c88; color:#fff; padding:12px 25px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">
+          Set Your Password
+        </a>
+      </div>
+
+      <p style="font-size:12px; color:#999;">
+        This link will expire in <strong>24 hours</strong>.
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f0f2f7; text-align:center; padding:15px;">
+      <p style="margin:0; font-size:12px; color:#777;">
+        © 2026 secureReport. All rights reserved.
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>

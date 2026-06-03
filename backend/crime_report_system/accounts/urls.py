@@ -11,6 +11,6 @@ urlpatterns = [
     path('account/', AccountView.as_view(), name='account'),
     path('auth/login/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
-    path('auth/password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('auth/password_reset/', PasswordResetRequestView.as_view()),
+    path('auth/password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view()),
 ]

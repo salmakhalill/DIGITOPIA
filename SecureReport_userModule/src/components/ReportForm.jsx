@@ -346,7 +346,7 @@ function ReportForm() {
       submitBtn.textContent = "جارٍ الإرسال...";
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/reports/", {
+        const res = await fetch("https://salmakhalill.pythonanywhere.com/api/reports/", {
           method: "POST",
           body: formData,
         });

@@ -48,7 +48,7 @@ const ReceivedReports = () => {
   useEffect(() => {
   const token = localStorage.getItem("accessToken");
 
-  fetch("http://127.0.0.1:8000/api/reports/", {
+  fetch("https://salmakhalill.pythonanywhere.com/api/reports/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -123,7 +123,7 @@ const ReceivedReports = () => {
 
   setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
 
-  fetch(`http://127.0.0.1:8000/api/reports/${id}/`, {
+  fetch(`https://salmakhalill.pythonanywhere.com/api/reports/${id}/`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

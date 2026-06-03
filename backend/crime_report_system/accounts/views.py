@@ -1,26 +1,22 @@
 from rest_framework import status, permissions, generics, mixins
 from rest_framework.response import Response
-from .models import CustomUser
-from .serializers import (
-    UserSerializer, AccountSerializer, MyTokenObtainPairSerializer,
-    PasswordResetRequestSerializer, PasswordResetConfirmSerializer
-)
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-# ------------------ Custom Permissions ------------------
-class IsAdminUser(permissions.BasePermission):
-    """
-    Allows access only to Admin users.
-    """
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'Admin'
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
-class IsActiveUser(permissions.BasePermission):
-    """
-    Allows access only to active users.
-    """
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.status == 'active'
+from .models import CustomUser
+from .serializers import (
+    UserSerializer,
+    AccountSerializer,
+    MyTokenObtainPairSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
+)
+
+from .permissions import IsAdmin, IsActiveUser
+from .services.email_service import send_password_email
+from .services.auth_service import get_user_from_uid
 
 # ------------------ Admin User Management ------------------
 class UsersMinimalView(
@@ -36,14 +32,25 @@ class UsersMinimalView(
     """
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsActiveUser, IsAdminUser]
+    permission_classes = [IsActiveUser, IsAdmin]
     lookup_field = 'id'
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        response = self.create(request, *args, **kwargs)
+
+        user = CustomUser.objects.get(id=response.data["id"])
+
+        send_password_email(
+            user,
+            "accounts/emails/welcome_user.html",
+            "Welcome to secureReport",
+            "Set your password"
+        )
+
+        return response
 
     def patch(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs, partial=True)
@@ -64,7 +71,34 @@ class AccountView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
     def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs, partial=True)
+        user = self.get_object()
+
+        current_password = request.data.get("current_password")
+        new_password = request.data.get("new_password")
+
+        if current_password and new_password:
+            if not user.check_password(current_password):
+                return Response(
+                    {"detail": "Current password is incorrect"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                validate_password(new_password, user)
+            except ValidationError as e:
+                return Response(
+                    {"new_password": e.messages},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            user.set_password(new_password)
+            user.save()
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
 # ------------------ JWT Login View ----------------------------------------------------------------
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -81,16 +115,22 @@ class PasswordResetRequestView(generics.GenericAPIView):
     """
     serializer_class = PasswordResetRequestSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+    def post(self, request):
+        email = request.data.get("email")
+
         try:
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            return Response({"detail": "Email not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "If email exists, reset link sent"}, status=200)
 
-        return Response({"detail": "Email found. Proceed to reset password."}, status=status.HTTP_200_OK)
+        send_password_email(
+            user,
+            "accounts/emails/reset_password.html",
+            "Reset your secureReport password",
+            "Reset your password"
+        )
+
+        return Response({"message": "Reset link sent"}, status=200)
 
 # ------------------ Password Reset Confirm --------------------------------------------------
 class PasswordResetConfirmView(generics.GenericAPIView):
@@ -100,17 +140,24 @@ class PasswordResetConfirmView(generics.GenericAPIView):
     """
     serializer_class = PasswordResetConfirmSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, uidb64, token):
+        user = get_user_from_uid(uidb64)
+
+        if not user:
+            return Response({"message": "Invalid link"}, status=400)
+
+        from django.contrib.auth.tokens import default_token_generator
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"message": "Invalid or expired token"}, status=400)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_password = serializer.validated_data['new_password']
 
-        email = request.data.get('email')
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            return Response({"detail": "Invalid email"}, status=status.HTTP_404_NOT_FOUND)
-
-        user.set_password(new_password)
+        user.set_password(serializer.validated_data["new_password"])
         user.save()
-        return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
+
+        return Response({
+            "success": True,
+            "message": "Password updated successfully"
+        }, status=200)

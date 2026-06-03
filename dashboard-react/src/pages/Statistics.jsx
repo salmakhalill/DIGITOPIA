@@ -46,7 +46,7 @@ const Statistics = () => {
 
   const getDashboardData = useCallback(async (year, location) => {
     const token = localStorage.getItem("accessToken");
-    let url = "http://127.0.0.1:8000/api/analytics/stats/";
+    let url = "https://salmakhalill.pythonanywhere.com/api/analytics/stats/";
 
     const params = new URLSearchParams();
     if (year) params.append("year", year);
